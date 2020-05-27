@@ -1,17 +1,22 @@
+import tactic
 import data.real.basic
 import data.real.irrational
-import tactic
 
 
 
-lemma lem₁ (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
+
+lemma lem (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
 begin
   intros eq₁,
   have : 2 ∣ n^2, by { use m^2, exact eq.symm eq₁},
   exact nat.prime.dvd_of_dvd_pow nat.prime_two ‹2 ∣ n^2 ›,
 end
 
-
+example (a b c : ℕ) (ha : a ≠ 0) :
+a * b = a * c → b = c :=
+begin
+library_search,
+end
 
 
 -- There are two sorry's in the proof and they both involve basic algebraic manipulations
@@ -19,32 +24,33 @@ end
 
 theorem sqrt2_irrational' : 
 ¬( ∃ p q : ℕ,
-      q ∣ p ∧
       q ≠ 0 ∧
-      p.gcd q = 1 ∧
-      2 = p^2 / q^2) :=
+      -- p ≠ q ∧
+      -- p.gcd q = 1 ∧
+      2 * q^2 = p^2) :=
 begin
-by_contradiction,
+by_contradiction h,
 
-  cases a with p, cases a_h with q, cases a_h_h with hqp, cases a_h_h_right with q_ne_zero, cases a_h_h_right_right with gcd_1 rational_2,
+  cases h with p h, 
+  cases h with q h, 
+  -- cases h with hqp a, 
+  cases h with q_ne_zero h, 
+  -- cases h with gcd_1 rational_2,
+    
 
-  have eq₁: 2 * q^2 = p^2,
-    by sorry,
+  have eq₂: 2 ∣ p := lem₁ q p h,
 
-  have eq₂: 2 ∣ p,
-    by exact lem₁ q p eq₁,
+  -- let eq₂' := eq₂,
+  -- There's no need to remember that eq₂' was proven from eq₂
+  have eq₂' := eq₂,
 
-  let eq₂' := eq₂,
-
-  unfold has_dvd.dvd at eq₂,
-
+  -- unfold has_dvd.dvd at eq₂,
   cases eq₂ with p₁ eq₂,
 
-  rw eq₂ at eq₁,
+  rw eq₂ at h,
 
   have eq₃: q^2 = 2 * p₁^2,
-    by { sorry },
-
+    {ring at h, apply nat.mul_left_cancel, },
   have eq₄: 2 * p₁^2 = q^2,
     by { exact eq.symm eq₃},
 
