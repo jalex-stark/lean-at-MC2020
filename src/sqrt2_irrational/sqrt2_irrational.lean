@@ -1,4 +1,5 @@
 import tactic
+import data.nat.basic
 import data.real.basic
 import data.real.irrational
 
@@ -6,7 +7,7 @@ import data.real.irrational
 
 
 lemma lem (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
-begin
+beginth
   intros eq₁,
   have : 2 ∣ n^2, by { use m^2, exact eq.symm eq₁},
   exact nat.prime.dvd_of_dvd_pow nat.prime_two ‹2 ∣ n^2 ›,
