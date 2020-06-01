@@ -1,8 +1,8 @@
 [package]
 name = "Mathcamp2020"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.14.0"
+lean_version = "leanprover-community/lean:3.15.0"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "c812ebebde49c0409c5a93e41e3a36431f72b0a5"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "6beebb0a9b7486d5baa6e1b2f6a5a775637a4ded"}
