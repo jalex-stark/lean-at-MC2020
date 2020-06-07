@@ -1,0 +1,4 @@
+.. _induction:
+
+Inductive Types
+================
