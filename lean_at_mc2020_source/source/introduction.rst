@@ -108,138 +108,6 @@ you have done something very impressive.
 So now you know the game.
 All that is left to learn are the rules.
 
-This book is complementary to a companion tutorial, `Theorem Proving in Lean`_,
-which provides a more thorough introduction to the underlying logical framework
-and core syntax of Lean.
-*Theorem Proving in Lean* is for people who prefer to read a user manual cover to cover before
-using a new dishwasher.
-If you are the kind of person who prefers to hit the *start* button and
-figure out how to activate the potscrubber feature later,
-it makes more sense to start here and refer back to
-*Theorem Proving in Lean* as necessary.
-
-Another thing that distinguishes *Mathematics in Lean* from
-*Theorem Proving in Lean* is that here we place a much greater
-emphasis on the use of *tactics*.
-Given that were are trying to build complex expressions,
-Lean offers two ways of going about it:
-we can write down the expressions themselves
-(that is, suitable text descriptions thereof),
-or we can provide Lean with *instructions* as to how to construct them.
-For example, the following expression represents a proof of the fact that
-if ``n`` is even then so is ``m * n``:
-
-.. code-block:: lean
-
-    import data.nat.parity
-    open nat
-
-    example : ∀ m n, even n → even (m * n) :=
-    assume m n ⟨k, (hk : n = 2 * k)⟩,
-    have hmn : m * n = 2 * (m * k),
-      by rw [hk, mul_left_comm],
-    show ∃ l, m * n = 2 * l,
-      from ⟨_, hmn⟩
-
-The *proof term* can be compressed to a single line:
-
-.. code-block:: lean
-
-    import data.nat.parity
-    open nat
-
-    -- BEGIN
-    example : ∀ m n, even n → even (m * n) :=
-    λ m n ⟨k, hk⟩, ⟨m * k, by rw [hk, mul_left_comm]⟩
-    -- END
-
-The following is, instead, a *tactic-style* proof of the same theorem:
-
-.. code-block:: lean
-
-    import data.nat.parity tactic
-    open nat
-
-    example : ∀ m n, even n → even (m * n) :=
-    begin
-      rintros m n ⟨k, hk⟩,
-      use m * k,
-      rw [hk, mul_left_comm]
-    end
-
-As you enter each line of such a proof in VS Code,
-Lean displays the *proof state* in a separate window,
-telling you what facts you have already established and what
-tasks remain to prove your theorem.
-You can replay the proof by stepping through the lines,
-since Lean will continue to show you the state of the proof
-at the point where the cursor is.
-In this example, you will then see that
-the first line of the proof introduces ``m`` and ``n``
-(we could have renamed them at that point, if we wanted to),
-and also decomposes the hypothesis ``even n`` to
-a ``k`` and the assumption that ``m = 2 * k``.
-The second line, ``use m * k``,
-declares that we are going to show that ``m * n`` is even by
-showing ``m * n = 2 * (m * k)``.
-The last line uses the ``rewrite`` tactic
-to replace ``n`` by ``2 * k`` in the goal
-and then swap the ``m`` and the ``2`` to show that the two sides
-of the equality are the same.
-
-The ability to build a proof in small steps with incremental feedback
-is extremely powerful. For that reason,
-tactic proofs are often easier and quicker to write than
-proof terms.
-There isn't a sharp distinction between the two:
-tactic proofs can be inserted in proof terms,
-as we did with the phrase ``by rw [hk, mul_left_comm]`` in the example above.
-We will also see that, conversely,
-it is often useful to insert a short proof term in the middle of a tactic proof.
-That said, in this book, our emphasis will be on the use of tactics.
-
-In our example, the tactic proof can also be reduced to a one-liner:
-
-.. code-block:: lean
-
-    import data.nat.parity tactic
-    open nat
-
-    -- BEGIN
-    example : ∀ m n, even n → even (m * n) :=
-    by rintros m n ⟨k, hk⟩; use m * k; rw [hk, mul_left_comm]
-    -- END
-
-Here were have used tactics to carry out small proof steps.
-But they can also provide substantial automation,
-and justify longer calculations and bigger inferential steps.
-For example, we can invoke Lean's simplifier with
-specific rules for simplifying statements about parity to
-prove our theorem automatically.
-
-.. code-block:: lean
-
-    import data.nat.parity tactic
-    open nat
-
-    -- BEGIN
-    example : ∀ m n, even n → even (m * n) :=
-    by intros; simp * with parity_simps
-    -- END
-
-Another big difference between the two introductions is that
-*Theorem Proving in Lean* depends only on core Lean and its built-in
-tactics, whereas *Mathematics in Lean* is built on top of Lean's
-powerful and ever-growing library, *mathlib*.
-As a result, we can show you how to use some of the mathematical
-objects and theorems in the library,
-and some of the very useful tactics.
-This book is not meant to be used as an overview of the library;
-the mathlib_ web pages contain extensive documentation.
-Rather, our goal is to introduce you to the style of thinking that
-underlies that formalization,
-so that you are comfortable browsing the library and
-finding things on your own.
 
 Interactive theorem proving can be frustrating,
 and the learning curve is steep.
@@ -257,8 +125,20 @@ interactive theorem proving will challenge you to think about
 mathematics and mathematical reasoning in fundamentally new ways.
 Your life may never be the same.
 
-*Acknowledgment.* We are grateful to Gabriel Ebner for setting up the
-infrastructure for running this tutorial in VS Code.
+*Acknowledgment.* 
+
+
+**Further Reading.** 
+
+#. `The Mechanization of Mathematics`_ 
+#. `The Future of Mathematics`_
+#. `Natural Number Game`_
+#. mathlib_
+#. `Natural Number Game`_
+#. `mathlib repository`_
+#. `Theorem Proving in Lean`_
+#. `Lean Zulip chat group`_
+
 
 .. _`The Mechanization of Mathematics`: https://www.ams.org/journals/notices/201806/rnoti-p681.pdf
 .. _`The Future of Mathematics`: https://www.youtube.com/watch?v=Dp-mQ3HxgDE

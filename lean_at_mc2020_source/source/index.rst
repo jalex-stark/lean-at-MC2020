@@ -5,7 +5,7 @@ Lean at MC 2020
 
 .. toctree::
    :numbered:
-   :maxdepth: 2
+   :maxdepth: 3
 
    introduction
    basics
