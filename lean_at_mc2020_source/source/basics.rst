@@ -241,3 +241,13 @@ For all quantifier
 
 Exercises 
 ===========
+
+
+Lounge paradox (a better name would be nice) 
+------------------
+  There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game.
+
+.. code:: lean 
+
+    theorem lounge {α : Type u} (r : α → Prop) [nonempty α] :
+      ∃ x, (r x → ∀ y, r y) := sorry

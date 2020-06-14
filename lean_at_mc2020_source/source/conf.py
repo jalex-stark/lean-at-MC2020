@@ -49,8 +49,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Lean at MC 2020'
-copyright = '2020, Jalex Stark, Apurva Nakade'
-author = 'Jalex Stark, Apurva Nakade'
+copyright = '2020, Apurva Nakade, Jalex Stark'
+author = 'Apurva Nakade, Jalex Stark'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -174,7 +174,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'lean_at_mc2020.tex', 'Lean at MC2020',
-     'Jalex Stark \\and Apurva Nakade', 'manual'),
+     'Apurva Nakade \\and Jalex Stark', 'manual'),
 ]
 
 

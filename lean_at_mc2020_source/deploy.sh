@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 if [ "$#" -ne 2 ]; then
-    echo "Usage example: $0 leanprover-community lean_at_mc2020"
+    echo "Usage example: $0 jalex-stark lean_at_mc2020"
     exit 1
 fi
 
