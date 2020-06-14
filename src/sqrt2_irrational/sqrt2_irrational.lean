@@ -8,6 +8,8 @@ import data.real.irrational
 noncomputable theory
 open_locale classical
 
+-- have them prove it assuming as much of the technical assumption
+
 lemma two_dvd_of_two_dvd_sq (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
 begin
   intros eq₁,
@@ -84,14 +86,14 @@ begin
   set k := m.gcd n,
   have hkm : k ∣ m := gcd_div_left m n, 
   have hkn : k ∣ n := gcd_div_right m n, 
-  have hn : n ≠ 0 := wlog_nonzero _ _ hm hmn,
+  -- have hn : n ≠ 0 := wlog_nonzero _ _ hm hmn,
   have hk : k ≠ 0, 
     { rw ← nat.pos_iff_ne_zero,
     apply nat.gcd_pos_of_pos_left,
     rwa nat.pos_iff_ne_zero },
   cases hkm with m' hkm,
   cases hkn with n' hkn,
-  use m', use n',
+  use [m', n'],
   split, apply gcd_spec m n m' n' k,
     simp,
     assumption,

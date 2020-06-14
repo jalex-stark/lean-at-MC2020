@@ -242,6 +242,17 @@ For all quantifier
 Exercises 
 ===========
 
+Triple negation without LEM
+------------------
+This exercise follows directly from classical.not_not. 
+However, classical.not_not introduces axioms that we don't need for this question.
+Can you do this in tactic mode with only intro, apply, and exact?
+.. code:: lean 
+
+    theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
+    begin
+      intro nnnp,
+    end
 
 Lounge paradox (a better name would be nice) 
 ------------------
@@ -250,4 +261,7 @@ Lounge paradox (a better name would be nice)
 .. code:: lean 
 
     theorem lounge {α : Type u} (r : α → Prop) [nonempty α] :
-      ∃ x, (r x → ∀ y, r y) := sorry
+      ∃ x, (r x → ∀ y, r y) := 
+    begin
+      sorry
+    end

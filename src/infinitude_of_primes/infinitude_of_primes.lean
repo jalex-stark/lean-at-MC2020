@@ -10,12 +10,9 @@ begin
  
   split,
   show p.prime, from pp,
- 
-  show p ≥ n,
-  begin
-    by_contradiction hp,
-    have hp₁: p ∣ n.fact, from dvd_fact (min_fac_pos (n.fact + 1)) (le_of_not_ge hp),
-    have hp₂: p ∣ 1, from (nat.dvd_add_iff_right hp₁).2 (fact n + 1).min_fac_dvd,
-    exact pp.not_dvd_one hp₂,
-  end,
+  
+  by_contradiction hp,
+  have hp₁: p ∣ n.fact, from dvd_fact (min_fac_pos (n.fact + 1)) (le_of_not_ge hp),
+  have hp₂: p ∣ 1, from (nat.dvd_add_iff_right hp₁).2 (fact n + 1).min_fac_dvd,
+  exact pp.not_dvd_one hp₂,
 end
