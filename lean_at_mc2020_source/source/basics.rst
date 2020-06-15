@@ -34,7 +34,7 @@ should be no errors in the bottom right box.
 
 .. code-block:: lean
 
-    lemma example1 (x y z : mynat) : x * y + z = x * y + z :=
+    lemma example1 (x y z : ℕ) : x * y + z = x * y + z :=
     begin 
       sorry,
     end
@@ -80,7 +80,7 @@ becomes empty.
 .. code:: lean 
     
     lemma example2 
-      (x y : mynat) 
+      (x y : ℕ) 
       (h : y = x + 7) 
         : 2 * y = 2 * (x + 7) :=
     begin 
@@ -191,16 +191,151 @@ to close the goal.
 
 
 
+Apply tactic
+------------
 
 
-Cases tactic 
--------------
+.. [diagram](https://wwwf.imperial.ac.uk/~buzzard/xena/natural_number_game_images/function_diag.jpg)
+
+.. image:: https://wwwf.imperial.ac.uk/~buzzard/xena/natural_number_game_images/function_diag.jpg
+   :width: 300
+
+
+We are given ``p : P`` and our goal is to find an element of ``U``, or
+in other words to find a path through the maze that links ``P`` to ``U``.
+In level 3 we solved this by using ``have`` s to move forward, from P
+to ``Q`` to ``T`` to ``U``. Using the ``apply`` tactic we can instead construct
+the path backwards, moving from ``U`` to ``T`` to ``Q`` to ``P``.
+
+Our goal is to construct an element of the set ``U``. But ``l:T → U`` is
+a function, so it would suffice to construct an element of ``T``. Tell
+Lean this by starting the proof below with
+
+.. code:: 
+
+  apply l,
+
+
+and notice that our assumptions don't change but *the goal changes*
+from ``⊢ U`` to ``⊢ T``. 
+
+Keep ``apply``ing functions until your goal is ``P``, and try not
+to get lost! Now solve this goal
+with ``exact p``. 
+
+
+.. Given an element of $P$ we can define an element of $U$.
+
+.. code:: lean 
+
+  example (P Q R S T U: Type)
+  (p : P)
+  (h : P → Q)
+  (i : Q → R)
+  (j : Q → T)
+  (k : S → T)
+  (l : T → U)
+  : U :=
+  begin
+    sorry,
+  end
 
 
 
 
 Split tactic
 -------------
+The logical symbol ``∧`` means ``and``. If ``P`` and ``Q`` are propositions, then
+``P ∧ Q`` is the proposition ``P and Q``. If your *goal* is ``P ∧ Q`` then
+you can make progress with the ``split`` tactic, which turns one goal ``⊢ P ∧ Q``
+into two goals, namely ``⊢ P`` and ``⊢ Q``. In the level below, after a ``split``,
+you will be able to finish off the goals with the ``exact`` tactic.
+
+
+.. If $P$ and $Q$ are true, then $P\land Q$ is true.
+
+.. code:: lean 
+
+  example (P Q : Prop) (p : P) (q : Q) : P ∧ Q :=
+  begin
+    sorry,
+  end 
+
+If the goal is `P ∧ Q` or `P ↔ Q` then `split` will break it into two goals.
+
+
+If `P Q : Prop` and the goal is `⊢ P ∧ Q`, then `split` will change it into
+two goals, namely `⊢ P` and `⊢ Q`. 
+
+If `P Q : Prop` and the goal is `⊢ P ↔ Q`, then `split` will change it into
+two goals, namely `⊢ P → Q` and `⊢ Q → P`.  
+
+**Example:**
+
+If your local context (the top right window) looks like this
+
+.. code:: 
+
+  a b : ℕ,
+  ⊢ a = b ↔ a + 3 = b + 3
+  
+
+then after
+
+.. code:: 
+
+  split,
+
+
+it will look like this:
+
+.. code:: 
+
+  2 goals
+  a b : ℕ
+  ⊢ a = b → a + 3 = b + 3
+
+  a b : ℕ
+  ⊢ a + 3 = b + 3 → a = b
+
+
+
+
+Cases tactic 
+-------------
+If ``P ∧ Q`` is in the goal, then we can make progress with ``split``.
+But what if ``P ∧ Q`` is a hypothesis? In this case, the ``cases`` tactic will enable
+us to extract proofs of ``P`` and ``Q`` from this hypothesis.
+
+The lemma below asks us to prove ``P ∧ Q → Q ∧ P``, that is,
+symmetry of the "and" relation. The obvious first move is
+
+.. code:: 
+  
+  intro h,
+
+
+because the goal is an implication and this tactic is guaranteed
+to make progress. Now ``h : P ∧ Q`` is a hypothesis, and
+
+.. code:: 
+  
+  cases h with p q,
+
+
+will change ``h``, the proof of ``P ∧ Q``, into two proofs ``p : P``
+and ``q : Q``. From there, ``split`` and ``exact`` will get you home.
+
+
+
+.. If $P$ and $Q$ are true/false statements, then $P\land Q\implies Q\land P$. 
+
+.. code:: lean 
+  
+  lemma and_symm (P Q : Prop) : P ∧ Q → Q ∧ P :=
+  begin
+    sorry,
+  end 
 
 
 
@@ -208,24 +343,79 @@ Split tactic
 Left / Right tactic 
 -------------------
 
+``P ∨ Q`` means ``P or Q``. So to prove it, you
+need to choose one of ``P`` or ``Q``, and prove that one.
+If ``⊢ P ∨ Q`` is your goal, then ``left`` changes this
+goal to ``⊢ P``, and ``right`` changes it to ``⊢ Q``.
+Note that you can take a wrong turn here. Let's
+start with trying to prove ``Q → (P ∨ Q)``.
+After the ``intro``, one of ``left`` and ``right`` leads
+to an impossible goal, the other to an easy finish.
+
+.. If $P$ and $Q$ are true/false statements, then $$Q\implies(P\lor Q).$$ 
+
+.. code:: lean 
+
+  example (P Q : Prop) : Q → (P ∨ Q) :=
+  begin
+    sorry,
+  end
+
+
+
 
 
 
 
 Negation in Lean 
------------------
+================
+There is a false proposition ``false``, with no proof. It is
+easy to check that ``¬ P`` is equivalent to ``P → false``,
+
+.. code:: 
+
+  not_iff_imp_false (P : Prop) : ¬ P ↔ (P → false)
 
 
+So you can start the proof of the contrapositive below with
+
+.. code:: 
+  
+  rw not_iff_imp_false,
+
+
+.. If $P$ and $Q$ are propositions, and $P\implies Q$, then $\lnot Q\implies \lnot P$. 
+
+.. code:: lean 
+
+  lemma contrapositive (P Q : Prop) : (P → Q) → (¬ Q → ¬ P) :=
+  begin
+    sorry,
+  end
+
+
+
+
+Exfalso tactic 
+---------------
+
+
+
+By_contradiction tactic 
+-----------------------
+
+
+
+Contrapose and push_neg tactics
+-------------------------------
 
 
 
 First order logic 
 =================
 
-
-
 Unfold tactic 
--------------
+---------------
 
 
 Use tactic 
@@ -258,7 +448,7 @@ Can you do this in tactic mode with only intro, apply, and exact?
 
 Lounge paradox (a better name would be nice) 
 --------------------------------------------
-  There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game.
+There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game.
 
 .. code:: lean 
 
