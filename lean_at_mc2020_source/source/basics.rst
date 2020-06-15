@@ -243,19 +243,21 @@ Exercises
 ===========
 
 Triple negation without LEM
-------------------
+---------------------------
 This exercise follows directly from classical.not_not. 
 However, classical.not_not introduces axioms that we don't need for this question.
 Can you do this in tactic mode with only intro, apply, and exact?
+
 .. code:: lean 
 
     theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
     begin
       intro nnnp,
     end
+    
 
 Lounge paradox (a better name would be nice) 
-------------------
+--------------------------------------------
   There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game.
 
 .. code:: lean 

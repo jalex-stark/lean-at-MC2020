@@ -11,7 +11,7 @@ Exercises
 ================
 
 Summing by induction
----------------
+--------------------
 .. code:: lean 
 
     -- by landing in ℤ, we avoid the perils of nat subtraction
@@ -34,20 +34,23 @@ Summing by induction
 
 
 
+
 Meet interval_cases
----------------
+-------------------
 
 interval_cases can reduce the problem to check the cases c = 0 and c = 1. 
+
 .. code:: lean 
 
-    lemma one_lt_of_nontrivial_factor 
-      {b c : ℕ} (hb : b < b * c) :
-    1 < c :=
-    begin
-      contrapose! hb, 
-      interval_cases c,
-      sorry
-    end
+  lemma one_lt_of_nontrivial_factor 
+    {b c : ℕ} (hb : b < b * c) :
+  1 < c :=
+  begin
+    contrapose! hb, 
+    interval_cases c,
+    sorry
+  end
+
 
 Odds and evens
 ---------------
@@ -63,10 +66,11 @@ Odds and evens
     end
 
 
+.. code-block:: lean
 
-lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
-begin
-  cases nat.prime.eq_two_or_odd hp, {assumption},
-  rw ← nat.not_even_iff at h, contradiction,
-end
+  lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
+  begin
+    cases nat.prime.eq_two_or_odd hp, {assumption},
+    rw ← nat.not_even_iff at h, contradiction,
+  end
 
