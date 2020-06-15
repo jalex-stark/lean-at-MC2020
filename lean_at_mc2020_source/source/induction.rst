@@ -1,7 +1,8 @@
 .. _induction:
 
-Inductive Types
-================
+***********************
+Natural numbers in Lean
+***********************
 
 
 
