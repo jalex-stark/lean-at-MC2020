@@ -8,8 +8,8 @@ Lean at MC 2020
    :maxdepth: 3
 
    introduction
-   basics
-   induction 
+   day1
+   day2
    day3
    day4
    day5
