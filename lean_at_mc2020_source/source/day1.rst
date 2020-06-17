@@ -16,7 +16,7 @@ sets called things like ``X``, we can also have concrete propositions like
 The convention we'll use is capital letters for propositions and small letters for proofs. 
 
 
-.. code:: lean 
+.. code:: 
     
     P : Prop
     p : P
@@ -369,6 +369,7 @@ this result. This is called the **law of the excluded middle**, and it cannot be
 .. If $P$ and $Q$ are true/false statements, then $$(\lnot Q\implies \lnot P)\implies(P\implies Q).$$ 
 
 .. code:: lean 
+
   lemma contrapositive2 (P Q : Prop) : (¬ Q → ¬ P) → (P → Q) :=
   begin
     sorry,
