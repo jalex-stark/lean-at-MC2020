@@ -10,6 +10,15 @@ begin
   rw classical.not_not,
 end
 
+
+
+example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
+begin
+  library_search,
+end
+
+#check @nat.prime.eq_two_or_odd
+
 lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
 begin
   cases nat.prime.eq_two_or_odd hp, {assumption},
@@ -34,6 +43,11 @@ begin
   interval_cases c,
 end
 
+example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
+begin
+  exact bot_lt_iff_ne_bot,
+end
+
 lemma nontrivial_product_of_not_prime
   {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
 ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k :=
@@ -43,13 +57,13 @@ begin
   use [a, b], norm_num, 
   split, assumption,
   split, rw [hb, lt_mul_iff_one_lt_left], linarith, 
-  sorry,
+  cases b, {linarith}, {simp},
   split, linarith,
   split, rw hb at ha2, apply one_lt_of_nontrivial_factor ha2,
   rw hb,
 end
 
-
+-- norm_num, linarith
 theorem three_fac_of_sum_consecutive_primes 
   {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
   (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
@@ -57,19 +71,16 @@ theorem three_fac_of_sum_consecutive_primes
 ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
 begin
   use 2, have h1 : nat.even (p + q), 
-  
-  { apply even_of_odd_add_odd,
-    contrapose! p_ne_2, apply eq_2_of_even_prime; assumption,
-    contrapose! q_ne_2, apply eq_2_of_even_prime; assumption },
+  { sorry },
+
   cases h1 with k hk, 
-  have hk' : ¬ k.prime, apply consecutive, linarith, linarith,
+  have hk' : ¬ k.prime, 
+  { sorry },
+
+  have h2k : 2 ≤ k, { sorry },
   have h2 := nat.exists_dvd_of_not_prime2 _ hk',
-  swap, { linarith [nat.prime.two_le hp] },
-  rcases h2 with ⟨b, hb, hb1, hb2⟩,
-  cases hb with c hc,
-  use [b, c], 
-  split, { rw [hk, hc], ring }, -- ring should get introduced in day 2
-  norm_num,
-  split, linarith, rw hc at hb2,
-  exact one_lt_of_nontrivial_factor hb2,
+  swap, { sorry },
+  rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
+  use [b,c],
+  sorry,
 end

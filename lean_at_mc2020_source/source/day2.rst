@@ -161,12 +161,78 @@ Odds and evens
     end
 
 
+First, informally prove the following:
+If p and q are consecutive primes, then p + q can be written as a product of three factors, each greater than 1.
+
+Then, fill in the following formal sketch of the same theorem. 
+We give two lemmas, together with an incomplete proof containing five `sorry`s. 
+You can work on the lemmas and `sorry`s in any order, without affecting the global structure of the proof.
+If you like, you can tear down the provided sketch and make your own proof. 
+
+In particular, feel free to solve the last one even if your proofs of the previous two have sorry
 .. code-block:: lean
    :name: eq_2_of_even_prime
 
+  example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
+  begin
+    library_search,
+  end
+
+  #check @nat.prime.eq_two_or_odd
   lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
   begin
     cases nat.prime.eq_two_or_odd hp, {assumption},
     rw ← nat.not_even_iff at h, contradiction,
   end
 
+.. code-block:: lean
+   :name: nontrivial_product_of_not_prime
+
+  -- norm_num, linarith
+  lemma nontrivial_product_of_not_prime
+    {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
+  ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k :=
+  begin
+    have h1 := nat.exists_dvd_of_not_prime2 two_le_k hk,
+    rcases h1 with ⟨a, ⟨b, hb⟩, ha1, ha2⟩,
+    use [a, b], norm_num, 
+    split, assumption,
+    split, rw [hb, lt_mul_iff_one_lt_left], linarith, 
+    cases b, {linarith}, {simp},
+    split, linarith,
+    split, rw hb at ha2, apply one_lt_of_nontrivial_factor ha2,
+    rw hb,
+  end
+
+.. code-block:: lean
+   :name: nontrivial_product_of_not_prime
+
+    lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 := sorry
+
+    lemma nontrivial_product_of_not_prime {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
+    ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k := sorry
+
+    theorem three_fac_of_sum_consecutive_primes 
+    {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
+    (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
+    (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
+    ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
+    begin
+      use 2, have h1 : nat.even (p + q), 
+      { sorry },
+
+      cases h1 with k hk, 
+      have hk' : ¬ k.prime, 
+      { sorry },
+
+      have h2k : 2 ≤ k, 
+      { sorry },
+
+      have h2 := nat.exists_dvd_of_not_prime2 _ hk',
+      swap, 
+      { sorry },
+
+      rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
+      use [b,c],
+      { sorry },
+    end
