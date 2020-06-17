@@ -12,10 +12,10 @@ Natural numbers in Lean
 The following axioms are the axioms isolated by Peano which uniquely characterize
 the natural numbers.
 
-  * a term ``0 : mynat``, interpreted as the number zero.
-  * a function ``succ : mynat → mynat``, with ``succ n`` interpreted as "the number after ``n``".
-  * The principle of mathematical induction:
-    if ``P(0)`` is true and for every natural number ``d`` we know that ``P(d) → P(succ d)``, then ``P(n)`` must be true for every natural number ``n``.
+* a term ``0 : mynat``, interpreted as the number zero.
+* a function ``succ : mynat → mynat``, with ``succ n`` interpreted as "the number after ``n``".
+* The principle of mathematical induction:
+  if ``P(0)`` is true and for every natural number ``d`` we know that ``P(d) → P(succ d)``, then ``P(n)`` must be true for every natural number ``n``.
 
 
 The first axiom says that ``0`` is a natural number. The second says that there
@@ -134,7 +134,7 @@ Meet interval_cases
 interval_cases can reduce the problem to check the cases c = 0 and c = 1. 
 
 .. code:: lean 
-   :name: interval_cases
+  :name: interval_cases
 
   lemma one_lt_of_nontrivial_factor 
     {b c : ℕ} (hb : b < b * c) :
@@ -146,10 +146,11 @@ interval_cases can reduce the problem to check the cases c = 0 and c = 1.
   end
 
 
+
 Odds and evens
 ---------------
 .. code:: lean 
-   :name: odds_and_evens
+    :name: odds_and_evens
 
     #check @nat.even_add
     -- tauto
@@ -161,17 +162,19 @@ Odds and evens
     end
 
 
+
 First, informally prove the following:
 If p and q are consecutive primes, then p + q can be written as a product of three factors, each greater than 1.
 
 Then, fill in the following formal sketch of the same theorem. 
-We give two lemmas, together with an incomplete proof containing five `sorry`s. 
-You can work on the lemmas and `sorry`s in any order, without affecting the global structure of the proof.
+We give two lemmas, together with an incomplete proof containing five ``sorry``. 
+You can work on the lemmas and ``sorry`` in any order, without affecting the global structure of the proof.
 If you like, you can tear down the provided sketch and make your own proof. 
 
 In particular, feel free to solve the last one even if your proofs of the previous two have sorry
+
 .. code-block:: lean
-   :name: eq_2_of_even_prime
+  :name: eq_2_of_even_prime
 
   example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
   begin
@@ -186,7 +189,7 @@ In particular, feel free to solve the last one even if your proofs of the previo
   end
 
 .. code-block:: lean
-   :name: nontrivial_product_of_not_prime
+  :name: nontrivial_product_of_not_prime
 
   -- norm_num, linarith
   lemma nontrivial_product_of_not_prime
@@ -205,34 +208,34 @@ In particular, feel free to solve the last one even if your proofs of the previo
   end
 
 .. code-block:: lean
-   :name: nontrivial_product_of_not_prime
+  :name: nontrivial_product_of_not_prime_2
 
-    lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 := sorry
+  lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 := sorry
 
-    lemma nontrivial_product_of_not_prime {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
-    ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k := sorry
+  lemma nontrivial_product_of_not_prime {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
+  ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k := sorry
 
-    theorem three_fac_of_sum_consecutive_primes 
-    {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
-    (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
-    (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
-    ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
-    begin
-      use 2, have h1 : nat.even (p + q), 
-      { sorry },
+  theorem three_fac_of_sum_consecutive_primes 
+  {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
+  (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
+  (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
+  ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
+  begin
+    use 2, have h1 : nat.even (p + q), 
+    { sorry },
 
-      cases h1 with k hk, 
-      have hk' : ¬ k.prime, 
-      { sorry },
+    cases h1 with k hk, 
+    have hk' : ¬ k.prime, 
+    { sorry },
 
-      have h2k : 2 ≤ k, 
-      { sorry },
+    have h2k : 2 ≤ k, 
+    { sorry },
 
-      have h2 := nat.exists_dvd_of_not_prime2 _ hk',
-      swap, 
-      { sorry },
+    have h2 := nat.exists_dvd_of_not_prime2 _ hk',
+    swap, 
+    { sorry },
 
-      rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
-      use [b,c],
-      { sorry },
-    end
+    rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
+    use [b,c],
+    { sorry },
+  end
