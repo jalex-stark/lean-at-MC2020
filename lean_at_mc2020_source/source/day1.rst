@@ -4,325 +4,396 @@
 Basics 
 ********
 
+Lean is based on **type theory** instead of **set theory**. 
+For the most part, you can assume that a **type** is a computer scientists version of a set. Just as a set has elements, a type has **inhabitants**. The notation 
 
-Let's learn some tactics! Add a brief introduction to tactics.
+.. code::   
+
+  0 : ℕ
+
+stands for ``0`` is an inhabitant of ``ℕ`` i.e. 0 is a natural numbers (yes, in Lean natural numbers start from ``0``).
+You can manipulate types and inhabitants the same way as sets and elements. For example, if ``X`` and ``Y`` are types then
+
+.. code::   
+
+  p : X × Y       -- product, p = (x,y)        for some x:X, y:Y
+  q : X ⊕ Y       -- disjoint, p = x or p = y  for some x:X, y:Y 
+  f : X → Y       -- functions, p(x) = y       for x:X and y:Y
+
+
 
 Propositional Logic 
 ====================
-A Proposition is a true/false statement, like ``2 + 2 = 4`` or ``2 + 2 = 5``.
-Just like we can have concrete sets in Lean like ``ℕ``, and abstract
-sets called things like ``X``, we can also have concrete propositions like
-``2 + 2 = 5`` and abstract propositions called things like ``P``. 
-The convention we'll use is capital letters for propositions and small letters for proofs. 
-
+A **proposition** is a statement that has a potential of being true or false, like ``2 + 2 = 4``, ``2 + 2 = 5``, "Fermat's last theorem", or "Riemann hypothesis".
+Just like we can have concrete sets in Lean like ``ℕ``, and abstract sets called things like ``X``, we can also have concrete propositions like ``2 + 2 = 5`` and abstract propositions called things like ``P``. 
 
 .. code:: 
     
-    P : Prop
-    p : P
+    P : Prop     -- P is a proposition 
+    hp : P       -- hp is a proof of P
+
+In type theory, there is a type ``Prop`` whose inhabitants are propositions.
+Further, each proposition ``P`` is itself a **type** and the inhabitants of ``P`` are its proofs!
+
+
+.. topic:: Very Important
+
+  Proving a proposition ``P: Prop`` is equivalent to producing an inhabitant ``hp : P``.
+
+
+**Notation:** In this section, ``P, Q, ...`` will denote propositions and ``hp, hq, ...`` will denote their proofs.
 
 
 
-Intro tactic 
--------------
-If your goal is a function or an implication ``⊢ P → Q`` then ``intro``
-will always make progress. ``intro p`` turns
 
-``⊢ P → Q``
 
-into 
+Implies
+-----------------------
+Let's prove a simple statement.
+
+.. code:: lean 
+  :name: tautology
+
+  -- P is a proposition 
+  variables P:Prop
+
+  --BEGIN--
+  -- if P is true then P is true.
+  theorem tautology (hp:P) : P :=      
+  begin 
+    sorry, 
+  end 
+  --END--
+
+Here, we are saying given a proof ``hp:P`` produce a proof of ``P``. But that's just ``hp``! 
+We tell Lean to use ``hp`` to "close the goal" by saying 
+
+.. code:: 
+
+  exact hp, 
+
+Try replacing ``sorry`` with ``exact hp,`` in the above proof. 
+
+
+Here's another way to describe the exact same statement. 
+
+.. code:: lean 
+  :name: tautology2
+
+  -- P is a proposition 
+  variables P:Prop
+
+  --BEGIN--
+  -- P implies P
+  theorem tautology2 : P → P :=      
+  begin 
+    sorry, 
+  end 
+  --END-- 
+
+Here, our goal is to produce a function ``f: P → P``. [#to]_ To do this, given an arbitrary proof ``hp:P`` we want to produce a proof of ``P``. To do this we use the ``intro`` tactic. Replace the ``sorry`` in the above proof with the following command.
+
+.. code:: 
+
+  intro hp,
+
+
+How does this change the goal? Can you finish the proof now?
+
+.. [#to] You can produce the ``→`` sign by typing ``\to`` followed by a space.
+
+
+
+
+
+
+And 
+----
+
+.. code:: lean 
+
+  -- P is a proposition 
+  variables P Q:Prop
+
+  --BEGIN--
+  -- (P and Q) implies (Q and P).
+  example : P ∧ Q → Q ∧ P :=      
+  begin 
+    sorry, 
+  end 
+  --END--
+
+You can start the proof by ``intro hpq`` which will produce 
+
+.. code:: 
+
+  hpq: P ∧ Q
+  ⊢ Q ∧ P
+
+Now we will need two tactics: ``cases`` and ``split``
+
+1. Writing ``cases hpq with hp hq`` breaks up ``hpq: P ∧ Q`` into two ``hp:P`` and ``hq:Q``.
+2. Writing ``split,`` breaks up the goal ``⊢ Q ∧ P`` into two different goals ``⊢ Q`` and ``⊢ Q`` and Lean will then focus on one goal at a time.
+
+Your turn.
+
+
+
+
+Or 
+----
+
+.. code:: lean 
+
+  -- P is a proposition 
+  variables P Q:Prop
+
+  --BEGIN--
+  -- (P or Q) implies (Q or P).
+  example : P ∨ Q → Q ∨ P :=      
+  begin 
+    sorry, 
+  end 
+  --END--
+
+You can start the proof by ``intro hpq`` which will produce 
+
+.. code:: 
+
+  hpq: P ∨ Q
+  ⊢ Q ∨ P
+
+
+Now we will need three tactics: ``cases``, ``left``, ``right``
+
+1. Writing ``cases hpq with hp hq`` produces two goals: 
+    * one with the assumption ``hp: P`` 
+    * another with the assumption ``hq:Q``.
+2. Writing ``left`` produces the new goal ``⊢ Q``.
+3. Writing ``right`` produces the new goal ``⊢ P``.
+
+Note that when the goal contains an ``∨`` you have to choose between ``left`` and ``right``. Choose wisely!
+
+Your turn.
+
+
+
+
+If and only if
+---------------
+
+``P ↔ Q`` is just a short form for ``(P → Q) ∧ (Q → P)``. 
+So you can use the tactics for ``→`` and ``∧`` when dealing with if and only if statements. 
+
+.. code:: lean 
+
+  -- P is a proposition 
+  variables P Q:Prop
+
+  --BEGIN--
+  -- (P or Q) if and only if (Q or P).
+  example : P ∨ Q ↔ Q ∨ P :=      
+  begin 
+    sorry, 
+  end 
+  --END--
+
+
+
+
+
+
+Forward and backward reasoning 
+-------------------------------
+
+In math, it is we can either argue forwards or backwards. This is achieved in Lean using the ``have`` and ``apply`` tactic.
+
+**Forward reasoning**
+If one of the assumptions is ``hp : P`` and we know that ``hpq : P → Q`` then we can create an element ``hq : Q`` using the set of commands, 
 
 .. code:: 
   
-    p : P
-    ⊢ Q
+  have hq := hpq (hp),
 
-What does it mean to define
-a function? Given an arbitrary term of type ``P`` you need
-to come up with a term of type ``Q``, so your first step is
-to choose ``p``, an arbitrary element of ``P``. 
+There are more complicated ways of using the ``have`` tactic which we'll see later.
 
-``intro p,`` is Lean's way of saying "let `p` be an arbitrary element of `P`.
-The tactic ``intro p`` changes
+
+
+**Backward reasoning**
+If the goal is ``⊢ Q`` and you know that ``hpq : P → Q`` then it suffices to show ``P``. This is achieved in Lean using the tactic:
 
 .. code:: 
   
-    ⊢ P → Q
+  apply f,
 
-into
-
-
-.. code:: 
-    
-    p : P
-    ⊢ Q
-
-So ``p`` is an arbitrary element of ``P`` about which nothing is known,
-and our task is to come up with an element of ``Q`` (which can of
-course depend on ``p``).
-
-
-
-Exact tactic 
-------------
-
-We have types ``P`` and ``Q`` and inhabitant ``p`` of ``P`` (written ``p : P``). 
-We also have a function ``h`` from ``P`` to ``Q``, and our goal is to construct an
-element of the set ``Q``. It's clear what to do *mathematically* to solve
-this goal -- we can
-make an element of ``Q`` by applying the function $h$ to
-the element $p$. But how to do it in Lean? 
-You can just write ``exact <formula>`` and this will close the goal. 
-
-**Example**
-
-If your local context looks like this
-
-.. code::
-
-    P Q : Type,
-    p : P,
-    h : P → Q
-    ⊢ Q
-
-
-then ``h(p)`` is an inhabitant of ``Q`` so you can just write
-
-.. code:: 
-
-    exact h(p),
-
-to close the goal. 
-
-
-
-**Important note:** Note that ``exact h(P),`` won't work (with a capital ``P``). 
-``P`` is not an inhabitant of ``P``, it's ``p`` that is an inhabitant of ``P``. 
+Try out the following using some combination of ``have`` and ``apply``.
 
 
 .. code:: lean 
 
-    example (P Q : Type) (p : P) (h : P → Q) : Q :=
+  -- P is a proposition 
+  variables P Q R S T:Prop
+
+  --BEGIN--
+  -- if P and (P implies Q) and (Q implies R) and (R implies T) then T
+  example 
+    (hp : P)
+    (hpq : P → Q)
+    (hqr : Q → R)
+    (hsr : S → R)
+    (hrt : R → T) : T :=
     begin
       sorry,
     end
-
-
-
-Apply tactic
-------------
-
-
-.. [diagram](https://wwwf.imperial.ac.uk/~buzzard/xena/natural_number_game_images/function_diag.jpg)
-
-.. image:: https://wwwf.imperial.ac.uk/~buzzard/xena/natural_number_game_images/function_diag.jpg
-   :width: 300
-
-
-We are given ``p : P`` and our goal is to find an element of ``U``, or
-in other words to find a path through the maze that links ``P`` to ``U``.
-In level 3 we solved this by using ``have`` s to move forward, from P
-to ``Q`` to ``T`` to ``U``. Using the ``apply`` tactic we can instead construct
-the path backwards, moving from ``U`` to ``T`` to ``Q`` to ``P``.
-
-Our goal is to construct an element of the set ``U``. But ``l:T → U`` is
-a function, so it would suffice to construct an element of ``T``. Tell
-Lean this by starting the proof below with
-
-.. code:: 
-
-  apply l,
-
-
-and notice that our assumptions don't change but *the goal changes*
-from ``⊢ U`` to ``⊢ T``. 
-
-Keep ``apply``ing functions until your goal is ``P``, and try not
-to get lost! Now solve this goal
-with ``exact p``. 
-
-
-.. Given an element of $P$ we can define an element of $U$.
-
-.. code:: lean 
-
-  example (P Q R S T U: Type)
-  (p : P)
-  (h : P → Q)
-  (i : Q → R)
-  (j : Q → T)
-  (k : S → T)
-  (l : T → U)
-  : U :=
-  begin
-    sorry,
-  end
+  --END--
 
 
 
 
-Split tactic
--------------
-The logical symbol ``∧`` means ``and``. If ``P`` and ``Q`` are propositions, then
-``P ∧ Q`` is the proposition ``P and Q``. If your *goal* is ``P ∧ Q`` then
-you can make progress with the ``split`` tactic, which turns one goal ``⊢ P ∧ Q``
-into two goals, namely ``⊢ P`` and ``⊢ Q``. In the level below, after a ``split``,
-you will be able to finish off the goals with the ``exact`` tactic.
-
-
-.. If $P$ and $Q$ are true, then $P\land Q$ is true.
-
-.. code:: lean 
-
-  example (P Q : Prop) (p : P) (q : Q) : P ∧ Q :=
-  begin
-    sorry,
-  end 
-
-Cases tactic 
--------------
-If ``P ∧ Q`` is in the goal, then we can make progress with ``split``.
-But what if ``P ∧ Q`` is a hypothesis? In this case, the ``cases`` tactic will enable
-us to extract proofs of ``P`` and ``Q`` from this hypothesis.
-
-The lemma below asks us to prove ``P ∧ Q → Q ∧ P``, that is,
-symmetry of the "and" relation. The obvious first move is
-
-.. code:: 
-  
-  intro h,
-
-
-because the goal is an implication and this tactic is guaranteed
-to make progress. Now ``h : P ∧ Q`` is a hypothesis, and
-
-.. code:: 
-  
-  cases h with p q,
-
-
-will change ``h``, the proof of ``P ∧ Q``, into two proofs ``p : P``
-and ``q : Q``. From there, ``split`` and ``exact`` will get you home.
 
 
 
-.. If $P$ and $Q$ are true/false statements, then $P\land Q\implies Q\land P$. 
+.. Rewrite (rw) tactic 
+.. ----------------------
 
-.. code:: lean 
-  
-  lemma and_symm (P Q : Prop) : P ∧ Q → Q ∧ P :=
-  begin
-    sorry,
-  end 
+.. The rewrite tactic is the way to "substitute in" the value
+.. of a variable. In general, if you have a hypothesis of the form ``A = B``, and your
+.. goal mentions the left hand side ``A`` somewhere, then
+.. the ``rewrite`` tactic will replace the ``A`` in your goal with a ``B``.
+.. Below is a theorem which cannot be
+.. proved using ``refl`` -- you need a rewrite first.
 
+.. Delete the sorry and take a look in the top right box at what we have.
+.. The variables ``x`` and ``y`` are natural numbers, and we have
+.. a proof ``h`` that ``y = x + 7``. Our goal
+.. is to prove that ``2y=2(x+7)``. This goal is obvious -- we just
+.. substitute in ``y = x + 7`` and we're done. In Lean, we do
+.. this substitution using the ``rw`` tactic. So start your proof with 
 
+.. .. code::
 
-Rewrite (rw) tactic 
-----------------------
+..     rw h,
 
-The rewrite tactic is the way to "substitute in" the value
-of a variable. In general, if you have a hypothesis of the form ``A = B``, and your
-goal mentions the left hand side ``A`` somewhere, then
-the ``rewrite`` tactic will replace the ``A`` in your goal with a ``B``.
-Below is a theorem which cannot be
-proved using ``refl`` -- you need a rewrite first.
+.. and then hit enter. **Don't forget the comma.**
+.. Did you see what happened to the goal? The goal doesn't close,
+.. but it *changes* from ``⊢ 2 * y = 2 * (x + 7)`` to ``⊢ 2 * (x + 7) = 2 * (x + 7)``.
+.. We can just close this goal with
 
-Delete the sorry and take a look in the top right box at what we have.
-The variables ``x`` and ``y`` are natural numbers, and we have
-a proof ``h`` that ``y = x + 7``. Our goal
-is to prove that ``2y=2(x+7)``. This goal is obvious -- we just
-substitute in ``y = x + 7`` and we're done. In Lean, we do
-this substitution using the ``rw`` tactic. So start your proof with 
+.. .. code::
 
-.. code::
+..     refl,
 
-    rw h,
-
-and then hit enter. **Don't forget the comma.**
-Did you see what happened to the goal? The goal doesn't close,
-but it *changes* from ``⊢ 2 * y = 2 * (x + 7)`` to ``⊢ 2 * (x + 7) = 2 * (x + 7)``.
-We can just close this goal with
-
-.. code::
-
-    refl,
-
-by writing it on the line after ``rw h,``. Don't forget the comma, hit
-enter, and enjoy seeing the "Proof complete!" message in the
-top right window. The other reason you'll know you're
-done is that the bottom right window (the error window)
-becomes empty. 
+.. by writing it on the line after ``rw h,``. Don't forget the comma, hit
+.. enter, and enjoy seeing the "Proof complete!" message in the
+.. top right window. The other reason you'll know you're
+.. done is that the bottom right window (the error window)
+.. becomes empty. 
 
 
-.. code:: lean 
+.. .. code:: lean 
     
-    lemma example2 
-      (x y : ℕ) 
-      (h : y = x + 7) 
-        : 2 * y = 2 * (x + 7) :=
-    begin 
-      sorry,
-    end
+..     lemma example2 
+..       (x y : ℕ) 
+..       (h : y = x + 7) 
+..         : 2 * y = 2 * (x + 7) :=
+..     begin 
+..       sorry,
+..     end
 
 
 
 
 
-Left / Right tactic 
+.. Left / Right tactic 
+.. -------------------
+
+.. ``P ∨ Q`` means ``P or Q``. So to prove it, you
+.. need to choose one of ``P`` or ``Q``, and prove that one.
+.. If ``⊢ P ∨ Q`` is your goal, then ``left`` changes this
+.. goal to ``⊢ P``, and ``right`` changes it to ``⊢ Q``.
+.. Note that you can take a wrong turn here. Let's
+.. start with trying to prove ``Q → (P ∨ Q)``.
+.. After the ``intro``, one of ``left`` and ``right`` leads
+.. to an impossible goal, the other to an easy finish.
+
+.. .. If $P$ and $Q$ are true/false statements, then $$Q\implies(P\lor Q).$$ 
+
+.. .. code:: lean 
+
+..   example (P Q : Prop) : Q → (P ∨ Q) :=
+..   begin
+..     sorry,
+..   end
+
+
+
+Practice exercises 
 -------------------
 
-``P ∨ Q`` means ``P or Q``. So to prove it, you
-need to choose one of ``P`` or ``Q``, and prove that one.
-If ``⊢ P ∨ Q`` is your goal, then ``left`` changes this
-goal to ``⊢ P``, and ``right`` changes it to ``⊢ Q``.
-Note that you can take a wrong turn here. Let's
-start with trying to prove ``Q → (P ∨ Q)``.
-After the ``intro``, one of ``left`` and ``right`` leads
-to an impossible goal, the other to an easy finish.
-
-.. If $P$ and $Q$ are true/false statements, then $$Q\implies(P\lor Q).$$ 
-
 .. code:: lean 
 
-  example (P Q : Prop) : Q → (P ∨ Q) :=
-  begin
-    sorry,
-  end
+  variables p q r : Prop
+
+  -- commutativity of ∧ and ∨
+  example : p ∧ q ↔ q ∧ p := sorry
+  example : p ∨ q ↔ q ∨ p := sorry
+
+  -- associativity of ∧ and ∨
+  example : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) := sorry
+  example : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) := sorry
+
+  -- distributivity
+  example : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := sorry
+  example : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) := sorry
+
+  -- other properties
+  example : (p → (q → r)) ↔ (p ∧ q → r) := sorry
+  example : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) := sorry
+  example : ¬(p ∨ q) ↔ ¬p ∧ ¬q := sorry
+  example : ¬p ∨ ¬q → ¬(p ∧ q) := sorry
+  example : ¬(p ∧ ¬p) := sorry
+  example : p ∧ ¬q → ¬(p → q) := sorry
+  example : ¬p → (p → q) := sorry
+  example : (¬p ∨ q) → (p → q) := sorry
+  example : p ∨ false ↔ p := sorry
+  example : p ∧ false ↔ false := sorry
+  example : (p → q) → (¬q → ¬p) := sorry
 
 
 
 
 
+Negation and LEM
+===========================================
+There is a false proposition ``false : Prop``, with no proof. 
+One can check that ``¬ P`` is equivalent to ``P → false``. (Why?)
 
+.. code:: lean
+  :name: contrapositive
 
-Negation in Lean 
-================
-There is a false proposition ``false``, with no proof. It is
-easy to check that ``¬ P`` is equivalent to ``P → false``,
+  variables P Q : Prop 
 
-.. code:: 
-
-  not_iff_imp_false (P : Prop) : ¬ P ↔ (P → false)
-
-
-So you can start the proof of the contrapositive below with
-
-.. code:: 
-  
-  rw not_iff_imp_false,
-
-
-.. If $P$ and $Q$ are propositions, and $P\implies Q$, then $\lnot Q\implies \lnot P$. 
-
-.. code:: lean 
+  --BEGIN--
 
   lemma contrapositive (P Q : Prop) : (P → Q) → (¬ Q → ¬ P) :=
   begin
     sorry,
   end
 
+  --END--
+
+
+
+
 Contrapose! tactic 
 ------------------
+Proof by contrapositive is so common in math that there is a special tactic for this.
+
+.. code:: 
+
+  contrapose!,
+
+Try the previous exercise by first applying ``intro hpq,`` and then ``contrapose!,``
 
 
 
