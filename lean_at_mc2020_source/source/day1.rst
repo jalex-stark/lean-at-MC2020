@@ -45,25 +45,20 @@ Further, each proposition ``P`` is itself a **type** and the inhabitants of ``P`
 
 
 
-
-
-Implies
------------------------
 Let's prove a simple statement.
 
 .. code:: lean 
   :name: tautology
 
   -- P is a proposition 
-  variables P:Prop
+  variables P : Prop
 
-  --BEGIN--
   -- if P is true then P is true.
-  theorem tautology (hp:P) : P :=      
+  theorem tautology (hp : P) : P :=      
   begin 
     sorry, 
   end 
-  --END--
+
 
 Here, we are saying given a proof ``hp:P`` produce a proof of ``P``. But that's just ``hp``! 
 We tell Lean to use ``hp`` to "close the goal" by saying 
@@ -75,23 +70,25 @@ We tell Lean to use ``hp`` to "close the goal" by saying
 Try replacing ``sorry`` with ``exact hp,`` in the above proof. 
 
 
+Implies
+-----------------------
 Here's another way to describe the exact same statement. 
 
 .. code:: lean 
   :name: tautology2
 
   -- P is a proposition 
-  variables P:Prop
+  variables P : Prop
 
-  --BEGIN--
+
   -- P implies P
   theorem tautology2 : P → P :=      
   begin 
     sorry, 
   end 
-  --END-- 
 
-Here, our goal is to produce a function ``f: P → P``. [#to]_ To do this, given an arbitrary proof ``hp:P`` we want to produce a proof of ``P``. To do this we use the ``intro`` tactic. Replace the ``sorry`` in the above proof with the following command.
+
+Here, our goal is to produce a function ``f: P → P``. To do this, given an arbitrary proof ``hp:P`` we want to produce a proof of ``P``. To do this we use the ``intro`` tactic. Replace the ``sorry`` in the above proof with the following command.
 
 .. code:: 
 
@@ -100,9 +97,6 @@ Here, our goal is to produce a function ``f: P → P``. [#to]_ To do this, given
 
 How does this change the goal? Can you finish the proof now?
 
-.. [#to] You can produce the ``→`` sign by typing ``\to`` followed by a space.
-
-
 
 
 
@@ -110,32 +104,40 @@ How does this change the goal? Can you finish the proof now?
 And 
 ----
 
+If ``P`` and ``Q`` are proposition, then ``P ∧ Q`` is the proposition which is true precisely when both ``P`` and ``Q`` are true.
+
+
+We need two tactics, ``cases`` and ``split``, to deal with ``∧`` depending on whether ``∧`` is in the assumptions or the goal.
+
+1. If ``hpq : P ∧ Q`` is an assumption then writing ``cases hpq with hp hq,`` produces two new assumptions ``hp : P`` and ``hq : Q``.
+2. If the current goal is ``⊢ P ∧ Q`` then the ``split,`` tactic produces two goals ``⊢ P`` and ``⊢ Q`` and Lean will then focus on one goal at a time.
+
+Your turn.
+
 .. code:: lean 
 
-  -- P is a proposition 
-  variables P Q:Prop
+  -- P and Q are propositions
+  variables P Q : Prop
 
-  --BEGIN--
+  -- (P and Q) implies P.
+  example : P ∧ Q → P :=      
+  begin 
+    sorry, 
+  end 
+
+  -- P implies (P and P).
+  example : P → P ∧ P :=      
+  begin 
+    sorry, 
+  end 
+
   -- (P and Q) implies (Q and P).
   example : P ∧ Q → Q ∧ P :=      
   begin 
     sorry, 
   end 
-  --END--
 
-You can start the proof by ``intro hpq`` which will produce 
 
-.. code:: 
-
-  hpq: P ∧ Q
-  ⊢ Q ∧ P
-
-Now we will need two tactics: ``cases`` and ``split``
-
-1. Writing ``cases hpq with hp hq`` breaks up ``hpq: P ∧ Q`` into two ``hp:P`` and ``hq:Q``.
-2. Writing ``split,`` breaks up the goal ``⊢ Q ∧ P`` into two different goals ``⊢ Q`` and ``⊢ Q`` and Lean will then focus on one goal at a time.
-
-Your turn.
 
 
 
@@ -143,39 +145,39 @@ Your turn.
 Or 
 ----
 
+
+If ``P`` and ``Q`` are proposition, then ``P ∨ Q`` is the proposition which is true precisely when at least one of ``P`` and ``Q`` is true.
+
+
+We need three tactics, ``cases``, ``left``, and ``right``, to deal with ``∨`` depending on whether ``∨`` is in the assumptions or the goal.
+
+1. If ``hpq : P ∨ Q`` is an assumption then writing ``cases hpq with hp hq,`` breaks up the problem into two cases: one with the assumption ``hp : P`` and another with the assumption ``hq : Q``.
+2. If the current goal is ``⊢ P ∨ Q`` then you have to make a choice of whether to prove ``P`` or ``Q``. You do this using either the ``left`` tactic or the ``right`` tactic.
+
+Your turn.
+
 .. code:: lean 
 
-  -- P is a proposition 
+  -- P and Q are propositions 
   variables P Q:Prop
 
-  --BEGIN--
-  -- (P or Q) implies (Q or P).
+  -- P implies (P or Q).
+  example : P → P ∨ Q :=      
+  begin 
+    sorry, 
+  end 
+
+  -- (P or P) implies P.
+  example : P ∨ P → P :=      
+  begin 
+    sorry, 
+  end 
+
+    -- (P or Q) implies (Q or P).
   example : P ∨ Q → Q ∨ P :=      
   begin 
     sorry, 
   end 
-  --END--
-
-You can start the proof by ``intro hpq`` which will produce 
-
-.. code:: 
-
-  hpq: P ∨ Q
-  ⊢ Q ∨ P
-
-
-Now we will need three tactics: ``cases``, ``left``, ``right``
-
-1. Writing ``cases hpq with hp hq`` produces two goals: 
-    * one with the assumption ``hp: P`` 
-    * another with the assumption ``hq:Q``.
-2. Writing ``left`` produces the new goal ``⊢ Q``.
-3. Writing ``right`` produces the new goal ``⊢ P``.
-
-Note that when the goal contains an ``∨`` you have to choose between ``left`` and ``right``. Choose wisely!
-
-Your turn.
-
 
 
 
@@ -187,16 +189,13 @@ So you can use the tactics for ``→`` and ``∧`` when dealing with if and only
 
 .. code:: lean 
 
-  -- P is a proposition 
-  variables P Q:Prop
-
-  --BEGIN--
-  -- (P or Q) if and only if (Q or P).
-  example : P ∨ Q ↔ Q ∨ P :=      
+  -- Let P be a Proposition. 
+  -- P is true if and only if (P or P) is true.
+  example (P : Prop) : P ↔ P ∨ P :=      
   begin 
     sorry, 
   end 
-  --END--
+
 
 
 
@@ -209,6 +208,7 @@ Forward and backward reasoning
 In math, it is we can either argue forwards or backwards. This is achieved in Lean using the ``have`` and ``apply`` tactic.
 
 **Forward reasoning**
+
 If one of the assumptions is ``hp : P`` and we know that ``hpq : P → Q`` then we can create an element ``hq : Q`` using the set of commands, 
 
 .. code:: 
@@ -220,22 +220,23 @@ There are more complicated ways of using the ``have`` tactic which we'll see lat
 
 
 **Backward reasoning**
+
 If the goal is ``⊢ Q`` and you know that ``hpq : P → Q`` then it suffices to show ``P``. This is achieved in Lean using the tactic:
 
 .. code:: 
   
-  apply f,
+  apply hpq,
 
 Try out the following using some combination of ``have`` and ``apply``.
 
 
 .. code:: lean 
 
-  -- P is a proposition 
+  -- P Q R S T are propositions
   variables P Q R S T:Prop
 
   --BEGIN--
-  -- if P and (P implies Q) and (Q implies R) and (R implies T) then T
+  -- if P and (P implies Q) and (Q implies R) and (S implies R) and (R implies T) then T
   example 
     (hp : P)
     (hpq : P → Q)
@@ -292,7 +293,7 @@ Try out the following using some combination of ``have`` and ``apply``.
 
 .. .. code:: lean 
     
-..     lemma example2 
+..     theorem example2 
 ..       (x y : ℕ) 
 ..       (h : y = x + 7) 
 ..         : 2 * y = 2 * (x + 7) :=
@@ -363,7 +364,7 @@ Practice exercises
 
 
 
-Negation and LEM
+Negation 
 ===========================================
 There is a false proposition ``false : Prop``, with no proof. 
 One can check that ``¬ P`` is equivalent to ``P → false``. (Why?)
@@ -371,11 +372,16 @@ One can check that ``¬ P`` is equivalent to ``P → false``. (Why?)
 .. code:: lean
   :name: contrapositive
 
+  -- needed for using the contrapose! tactic
+  import tactic 
+
+  -- P Q are propositions 
   variables P Q : Prop 
 
   --BEGIN--
 
-  lemma contrapositive (P Q : Prop) : (P → Q) → (¬ Q → ¬ P) :=
+  -- (P implies Q) implies (not P implies not Q)
+  theorem contrapositive : (P → Q) → (¬ Q → ¬ P) :=
   begin
     sorry,
   end
@@ -385,7 +391,7 @@ One can check that ``¬ P`` is equivalent to ``P → false``. (Why?)
 
 
 
-Contrapose! tactic 
+Contrapositive  
 ------------------
 Proof by contrapositive is so common in math that there is a special tactic for this.
 
@@ -394,78 +400,148 @@ Proof by contrapositive is so common in math that there is a special tactic for 
   contrapose!,
 
 Try the previous exercise by first applying ``intro hpq,`` and then ``contrapose!,``
+What if you start your proof with ``contrapose!``?
 
 
 
-Exfalso tactic 
----------------
-It's certainly true that ``P ∧ (¬P) → Q`` for any propositions ``P`` and ``Q``,
-because the left hand side of the implication is false. But how do we prove that false implies any proposition 
-``Q``? A cheap way of doing it in Lean is using the ``exfalso`` tactic, which changes any goal at all to false. 
 
-.. Lemma If  P and Q are true/false statements, then P ∧ (¬P) → Q
+
+
+
+Proof by contradiction 
+-----------------------
+The converse, that ``(¬ Q → ¬ P) → (P → Q)`` is not provable using constructive logic and requires proof by contradiction. 
+For this we need to use *proof by contradiction*. 
+
+.. code:: 
+
+  by_contradiction,
+
+Try proving the following using proof by contradiction. 
+
+.. code:: lean
+  :name: contrapositive2
+
+  -- needed for using the contrapose! tactic
+  import tactic 
+
+  -- P Q are propositions 
+  variables P Q : Prop 
+
+  --BEGIN--
+
+  -- (P implies Q) implies (not P implies not Q)
+  theorem contradiction : (¬ Q → ¬ P) → (P → Q) :=
+  begin
+    sorry,
+  end
+
+  --END--
+
+
+
+Law of excluded middle
+-----------------------
+Often in math, we want to make statements like either ``P`` is true or ``¬ P`` is true. This is called the **law of excluded middle**. LEM is what makes proofs by contradiction work. To invoke LEM in Lean, we use the tactic ``by_cases p : P,`` where ``P : Prop`` is a proposition, which breaks the problem into two sub-problems one with the assumption ``hp : P`` and another with the assumption `` hnp : ¬ P``.
+
+For  which of the following do you need to use the LEM? 
 
 .. code:: lean 
 
-  lemma contra (P Q : Prop) : (P ∧ ¬ P) → Q :=
+  theorem LEM_1 (P : Prop) : P → ¬ ¬ P:=
+  begin
+    sorry,
+  end 
+  
+  theorem LEM_2 (P : Prop) : ¬ ¬ P → P:=
+  begin
+    sorry,
+  end 
+
+  
+
+
+Principle of explosion 
+-----------------------
+``P`` and  ``¬P`` implies anything. This is called the **principle of explosion** ("ex falso (sequitur) quodlibet = from falsehood, anything"). 
+This is done in Lean using the ``exfalso`` tactic, which simply converts the current goal to ``false``. Give it a try.
+
+.. code:: lean 
+  :name: explosion
+
+  -- P and not P implies Q
+  theorem explosion (P Q : Prop) (P ∧ ¬ P) : Q :=
   begin
     sorry,  
   end
 
 
 
-By_contradiction tactic 
------------------------
-We proved earlier that ``(P → Q) → (¬ Q → ¬ P)``. The converse,
-that ``(¬ Q → ¬ P) → (P → Q)`` is certainly true, but trying to prove
-it using what we've learnt so far is impossible (because it is not provable in
-constructive logic). 
-
-But you can just prove this, and any other basic lemmas of this form like ``¬ ¬ P → P``,
-using the ``by_cases`` tactic. Instead of starting with all the ``intro`` s, try this instead:
-
-.. code:: 
-  
-  by_cases p : P,
-  by_cases q : Q,
-
-After it, there are four goals, one for each of the four possibilities ``PQ=TT, TF, FT, FF``.
-You can see that ``p`` is a proof of ``P`` in some of the goals, and a proof of ``¬ P`` in others.
-Similar comments apply to ``q``. 
-
-This approach assumed that ``P ∨ ¬ P`` was true; the ``by_cases`` tactic just does ``cases`` on
-this result. This is called the **law of the excluded middle**, and it cannot be proved using other axioms of logic.
-
-
-.. If $P$ and $Q$ are true/false statements, then $$(\lnot Q\implies \lnot P)\implies(P\implies Q).$$ 
+Practice exercises
+-------------------
 
 .. code:: lean 
 
-  lemma contrapositive2 (P Q : Prop) : (¬ Q → ¬ P) → (P → Q) :=
-  begin
-    sorry,
-  end 
+  variables p q r s : Prop
 
-
-
-
-
-
-
-
+  example : (p → r ∨ s) → ((p → r) ∨ (p → s)) := sorry
+  example : ¬(p ∧ q) → ¬p ∨ ¬q := sorry
+  example : ¬(p → q) → p ∧ ¬q := sorry
+  example : (p → q) → (¬p ∨ q) := sorry
+  example : (¬q → ¬p) → (p → q) := sorry
+  example : p ∨ ¬p := sorry
+  example : (((p → q) → p) → p) := sorry
 
 
 First order logic 
 =================
 
 
-Use tactic 
-----------
 
-
-
-For all quantifier 
+For all 
 ------------------
+We need two tactics, ``intro`` and ``specialize``, for dealing with "∀" depending on whether it is in the assumptions or the goal.
+
+1. If one of the assumptions is ``hp : ∀ x: X, P x`` and ``y : X`` then ``specialize hp y`` changes the assumption to ``hp : P y``.
+2. If the current goal is ``⊢ ∀ x : X, P x`` then ``intro x`` produces an assumption ``x : X`` and changes the goal to ``P x``.
+
+Your turn.
+
+.. code:: lean 
+
+  -- for all propositions P, (P and P) implies P
+  example : ∀ P : Prop, (P ∧ P → P) :=
+  begin 
+    sorry,
+  end     
+
+  -- P is a collection of propositions, one for each natural number 
+  variables (P : ℕ → Prop)
+
+  example : (∀ x : ℕ, P x) → (∀ x : ℕ, P x) ∧ (∀ x : ℕ, P x) := 
+  begin 
+    sorry,
+  end 
+
+There exists 
+-------------
+We need two tactics, ``cases`` and ``use``, for dealing with "∃" depending on whether it is in the assumptions or the goal.
+
+1. If one of the assumptions is ``hp : ∃ x: X, P x`` then ``cases hp with x hpx`` will produces two new assumptions ``x : X`` and ``hpx : P x``.
+2. If the current goal is ``⊢ ∃ x : X, P x`` and ``y : X`` is one of the assumptions then ``use x,`` changes the goal to ``P y``. 
+
+Your turn.
+
+.. code:: lean 
+
+
+  -- P is a collection of propositions, one for each natural number 
+  variables (P : ℕ → Prop)
+
+  example : (∀ x : ℕ, ¬ P x) ↔ ¬(∃ x : ℕ, P x) := 
+  begin 
+    sorry,
+  end 
 
 
 

@@ -4,6 +4,17 @@
 Inductive types
 ***********************
 
+Equality 
+=========
+Equality is a non-trivial thing in type theory. In math we use the equality symbol "=" to mean two different things 
+
+.. math:: 
+
+  \mathrm{let} \:\: x &= 5 \\
+  (x+1)^2 &= x^2 + 2 x + 1
+
+The first statement is simply assigning the value ``5`` to the variable ``x``. This is called *definitional equality* and in Lean this is denoted using ``:=``. You have already seen this in the ``have`` tactic. The second statement is in fact a *proposition* that requires a proof! This is called *propositional equality*.
+
 
 
 Natural numbers in Lean 
