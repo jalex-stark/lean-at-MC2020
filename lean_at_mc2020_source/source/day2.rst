@@ -115,8 +115,14 @@ Exercises
 
 Summing by induction
 --------------------
+You're going to end up with a goal state that has both nats and ints in it.
+Use push_cast if you want to think about it as an int statement, and norm_cast if you want to think about it as a nat statement.
+(Hint: the integers are a ring and the naturals are not.)
 .. code:: lean 
    :name: summing_by_induction
+
+    import tactic
+    import data.int.basic
 
     -- by landing in ℤ, we avoid the perils of nat subtraction
     def f : ℕ → ℤ
@@ -125,8 +131,7 @@ Summing by induction
 
     example : f 1 = 1 := by refl
 
-    -- ring, norm_num, push_cast, norm_cast
-    -- nat.succ_eq_add_one
+    #check nat.succ_eq_add_one
     example (n : ℕ) : 2 * f n = n * (n - 1) :=
     begin
       induction n with d hd, 
@@ -145,35 +150,24 @@ Meet interval_cases
 interval_cases can reduce the problem to check the cases c = 0 and c = 1. 
 
 .. code:: lean 
-  :name: interval_cases
+   :name: interval_cases
 
-  lemma one_lt_of_nontrivial_factor 
-    {b c : ℕ} (hb : b < b * c) :
-  1 < c :=
-  begin
-    contrapose! hb, 
-    interval_cases c,
-    sorry
-  end
+    import tactic
 
-
-
-Odds and evens
----------------
-.. code:: lean 
-    :name: odds_and_evens
-
-    #check @nat.even_add
-    -- tauto
-    lemma even_of_odd_add_odd
-      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
-    nat.even (a + b) :=
+    lemma one_lt_of_nontrivial_factor 
+      {b c : ℕ} (hb : b < b * c) :
+    1 < c :=
     begin
+      contrapose! hb, 
+      interval_cases c,
       sorry
     end
 
 
 
+
+A number theory puzzle
+----------------------
 First, informally prove the following:
 If p and q are consecutive primes, then p + q can be written as a product of three factors, each greater than 1.
 
@@ -185,68 +179,74 @@ If you like, you can tear down the provided sketch and make your own proof.
 In particular, feel free to solve the last one even if your proofs of the previous two have sorry
 
 .. code-block:: lean
-  :name: eq_2_of_even_prime
+   :name: eq_2_of_even_prime
 
-  example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
-  begin
-    library_search,
-  end
+    import tactic
+    import data.nat.prime
+    import data.nat.parity
 
-  #check @nat.prime.eq_two_or_odd
-  lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
-  begin
-    cases nat.prime.eq_two_or_odd hp, {assumption},
-    rw ← nat.not_even_iff at h, contradiction,
-  end
+    example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
+    begin
+      library_search,
+    end
 
-.. code-block:: lean
-  :name: nontrivial_product_of_not_prime
-
-  -- norm_num, linarith
-  lemma nontrivial_product_of_not_prime
-    {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
-  ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k :=
-  begin
-    have h1 := nat.exists_dvd_of_not_prime2 two_le_k hk,
-    rcases h1 with ⟨a, ⟨b, hb⟩, ha1, ha2⟩,
-    use [a, b], norm_num, 
-    split, assumption,
-    split, rw [hb, lt_mul_iff_one_lt_left], linarith, 
-    cases b, {linarith}, {simp},
-    split, linarith,
-    split, rw hb at ha2, apply one_lt_of_nontrivial_factor ha2,
-    rw hb,
-  end
+    #check @nat.prime.eq_two_or_odd
+    lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
+    begin
+      sorry
+    end
 
 .. code-block:: lean
-  :name: nontrivial_product_of_not_prime_2
+   :name: nontrivial_product_of_not_prime
 
-  lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 := sorry
+    import tactic
+    import data.nat.prime
+    import data.nat.parity
 
-  lemma nontrivial_product_of_not_prime {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
-  ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k := sorry
+    -- norm_num, linarith
+    lemma nontrivial_product_of_not_prime
+      {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
+    ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k :=
+    begin
+      have h1 := nat.exists_dvd_of_not_prime2 two_le_k hk,
+      rcases h1 with ⟨a, ⟨b, hb⟩, ha1, ha2⟩,
+      use [a, b], norm_num, 
+      sorry
+    end
 
-  theorem three_fac_of_sum_consecutive_primes 
-  {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
-  (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
-  (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
-  ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
-  begin
-    use 2, have h1 : nat.even (p + q), 
-    { sorry },
+.. code-block:: lean
+   :name: nontrivial_product_of_not_prime_2
 
-    cases h1 with k hk, 
-    have hk' : ¬ k.prime, 
-    { sorry },
+    import tactic
+    import data.nat.prime
+    import data.nat.parity
 
-    have h2k : 2 ≤ k, 
-    { sorry },
+    lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 := sorry
 
-    have h2 := nat.exists_dvd_of_not_prime2 _ hk',
-    swap, 
-    { sorry },
+    lemma nontrivial_product_of_not_prime {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
+    ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k := sorry
 
-    rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
-    use [b,c],
-    { sorry },
-  end
+    theorem three_fac_of_sum_consecutive_primes 
+    {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
+    (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
+    (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
+    ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
+    begin
+      use 2, have h1 : nat.even (p + q), 
+      { sorry },
+
+      cases h1 with k hk, 
+      have hk' : ¬ k.prime, 
+      { sorry },
+
+      have h2k : 2 ≤ k, 
+      { sorry },
+
+      have h2 := nat.exists_dvd_of_not_prime2 _ hk',
+      swap, 
+      { sorry },
+
+      rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
+      use [b,c],
+      { sorry },
+    end

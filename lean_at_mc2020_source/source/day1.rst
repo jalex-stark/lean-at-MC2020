@@ -546,7 +546,7 @@ Your turn.
 
 
 
-Exercises 
+Problems 
 ===========
 
 Triple negation without LEM
@@ -563,16 +563,42 @@ Can you do this in tactic mode with only intro, apply, and exact?
       intro nnnp,
     end
     
+   
 
-Lounge paradox (a better name would be nice) 
+Lounge paradox 
 --------------------------------------------
 There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game.
 
 .. code:: lean 
    :name: lounge_paradox
 
-    theorem lounge {α : Type u} (r : α → Prop) [nonempty α] :
-      ∃ x, (r x → ∀ y, r y) := 
+    import tactic
+    -- the next two lines let us use the by_cases tactic without trouble
+    noncomputable theory
+    open_locale classical 
+
+    theorem lounge {camper : Type u} (playing : camper → Prop) [inhabited camper] :
+      ∃ x, (playing x → ∀ y, playing y) :=
     begin
-      sorry
+      have alice := arbitrary camper, -- this works because of "inhabited" above
+      by_cases h : ∃ bob, ¬ playing bob,
+    end
+
+Odds and evens
+---------------
+Here's an example with statements about natural numbers. 
+We started the proof by rewriting with something from the library. 
+Try finishing the proof with just your logic tools --- you shouldn't need to know how natural numbers are implemented.
+
+.. code:: lean 
+   :name: odds_and_evens
+
+    import tactic
+    import data.nat.parity
+
+    lemma even_of_odd_add_odd
+      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
+    nat.even (a + b) :=
+    begin
+      rw nat.even_add,
     end
