@@ -3,8 +3,10 @@
 Lean at MC 2020
 ===================
 
+..include
+
 .. toctree::
-   :numbered:
+   :numbered: 2
    :maxdepth: 3
 
    introduction

@@ -577,8 +577,9 @@ There is someone in the lounge such that, if they are playing a game, then every
     noncomputable theory
     open_locale classical 
 
-    theorem lounge {camper : Type u} (playing : camper → Prop) [inhabited camper] :
-      ∃ x, (playing x → ∀ y, playing y) :=
+    theorem lounge 
+     {camper : Type u} (playing : camper → Prop) [inhabited camper] :
+    ∃ x, (playing x → ∀ y, playing y) :=c
     begin
       have alice := arbitrary camper, -- this works because of "inhabited" above
       by_cases h : ∃ bob, ¬ playing bob,

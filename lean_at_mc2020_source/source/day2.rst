@@ -118,13 +118,13 @@ Summing by induction
 You're going to end up with a goal state that has both nats and ints in it.
 Use push_cast if you want to think about it as an int statement, and norm_cast if you want to think about it as a nat statement.
 (Hint: the integers are a ring and the naturals are not.)
+
 .. code:: lean 
    :name: summing_by_induction
 
     import tactic
     import data.int.basic
 
-    -- by landing in ℤ, we avoid the perils of nat subtraction
     def f : ℕ → ℤ
     | 0 := 0
     | (n + 1) := n + f n
@@ -185,16 +185,21 @@ In particular, feel free to solve the last one even if your proofs of the previo
     import data.nat.prime
     import data.nat.parity
 
-    example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
+    example (p : ℕ) : p.prime → p = 2 ∨ p ≡ 1 [MOD 2] :=
     begin
-      library_search,
+      library_search!,
     end
 
-    #check @nat.prime.eq_two_or_odd
+    example (p : ℕ) : p ≡ 1 [MOD 2] ↔ ¬ p.even :=
+    begin
+      library_search!,
+    end
+
     lemma eq_2_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
     begin
       sorry
     end
+
 
 .. code-block:: lean
    :name: nontrivial_product_of_not_prime
