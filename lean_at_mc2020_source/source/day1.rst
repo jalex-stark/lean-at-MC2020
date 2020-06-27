@@ -76,205 +76,7 @@ We tell Lean to use ``hp`` to "close the goal" by saying
 Try replacing ``sorry`` with ``exact hp,`` in the above proof.
 
 
-
-
-Propositional Logic
-====================
-
 Propositional logic provides the logical operators **implies** (``→``), **or** (``∨``), **and** (``∧``), **negation** (``¬``) for combining simple propositions to create complex ones.
-
-**or** (``∨``), **and** (``∧``), in type theory are exactly the same as in set theory.
-
-There are two tactics in Lean for dealing with ``∧``:
-
-1. ``split``
-2. ``cases``
-
-and three tactics in Lean for dealing with ``∨``:
-
-1. ``left``
-2. ``right``
-3. ``cases``
-
-Their use is best explained through examples.
-
-
-.. code:: lean
-  :name: and_or_example
-
-  /---------------------------------------------------------------
-
-  Tactics used for the ∧ (and) operator: split and cases
-  Tactics used for the ∨ (or) operator: left/right and cases
-
-  --------------------------------------------------------------/
-
-  -- If P ∧ Q is true then P is true.
-  example (P Q : Prop) (hpq : P ∧ Q) : P :=
-  begin
-    cases hpq with hp hq,
-    exact hp,
-  end
-
-  -- If P is true and Q is true then P ∧ Q is true.
-  example (P Q : Prop) (hp : P) (hq : Q) : P ∧ Q :=
-  begin
-    split,
-    exact hp,
-    exact hq,
-  end
-
-  -- If P is true then P ∨ Q is true.
-  example (P Q : Prop) (hp : P) : P ∨ Q :=
-  begin
-    left,
-    exact hp,
-  end
-
-  -- If P ∨ P is true then P is true.
-  example (P : Prop) (hpp : P ∨ P) : P :=
-  begin
-    cases hpp with hp1 hp2,
-    exact hp1,
-    exact hp2,
-  end
-
-  /---------------------------------------------------------------
-
-  Your turn.
-
-  --------------------------------------------------------------/
-
-  -- If P ∧ Q is true then Q ∧ P is true.
-  example (P Q : Prop) (hpq : P ∧ Q) : Q ∧ P :=
-  begin
-    sorry,
-  end
-
-  -- If P ∧ Q is true then Q ∧ P is true.
-  example (P Q : Prop) (hpq : P ∧ Q) : Q ∧ P :=
-  begin
-    sorry,
-  end
-
-  -- If P ∨ Q is true then Q ∨ P  is true.
-  example (P Q : Prop) (hpq : P ∨ Q) : Q ∨ P :=
-  begin
-    sorry,
-  end
-
-  -- If P ∧ Q is true then P ∨ Q is true.
-  example (P Q : Prop) (hpq : P ∧ Q) : P ∨ Q :=
-  begin
-    sorry,
-  end
-
-
-**implies** (``→``) is a very interesting operator in type theory.
-A proof of ``P → Q`` is very literally a function ``f : P → Q``.
-
-In set theory, ``P → Q`` is true if either both ``P`` and ``Q`` are true (case 1) or if ``P`` is false (case 2).
-If there is a function ``f : P → Q`` then every proof ``hp : P`` produces a proof ``f(hp) : Q`` (case 1).
-If ``P`` is false then ``P`` is *empty*, and there is always an `empty function`_ from an empty type to any type ``Q`` (case 2).
-There are four different tactics you can use to deal with **implies** (``→``)
-
-1. ``intros``
-2. ``apply``
-3. ``have``
-4. ``exact``
-
-
-.. _`empty function`: https://en.wikipedia.org/wiki/Function_(mathematics)#empty_function
-
-.. code:: lean
-  :name: implies_examples
-
-  /-------------------------------------------------------------------------
-
-  Tactics used for the → (implies) operator: intros, apply, have, exact
-
-  --------------------------------------------------------------------------/
-
-  -- P implies P.
-  theorem tautology2 (P: Prop) : P → P :=
-  begin
-    intros hp,
-    exact hp,
-  end
-
-  -- If P implies Q and Q implies R then P implies R.
-  example (P Q R S : Prop) (f : P → Q) (g : Q → R) : P → R :=
-  begin
-    intros hp,
-    have hq := f (hp),
-    exact g (hq),
-  end
-
-  -- If P implies Q and Q implies R then P implies R.
-  example (P Q R S : Prop) (hp : P) (f : P → Q) (g : Q → R) : R :=
-  begin
-    apply g,
-    apply f,
-    exact hp,
-  end
-
-  -- If P implies Q and Q implies R then P implies R.
-  example (P Q R S : Prop) (hp : P) (f : P → Q) (g : Q → R) : R :=
-  begin
-    have hq := f (hp),
-    apply g,
-    exact hq,
-  end
-
-
-  /-------------------------------------------------------------------------
-
-  Your turn.
-
-  --------------------------------------------------------------------------/
-
-  example (P Q : Prop) : P → (Q → P) :=
-  begin
-    sorry,
-  end
-
-  example (P Q R : Prop) : (P → R) ∧ (Q → R) → ((P ∨ Q) → R):=
-  begin
-    sorry,
-  end
-
-  -- need some more problems here
-
-
-
-**negation** (``¬``) is another very interesting operator in type theory.
-There is a proposition ``false : Prop`` in type theory which has no proof (and is *empty*).
-The negative of a proposition ``¬ P`` is a function ``f : P → false``.
-This follows from the fact that if a proposition implies a false proposition then it must itself be false.
-The tactics negation are the same as the tactics for ``implies``.
-
-
-.. code:: lean
-
-  /-------------------------------------------------------------------------
-
-  Tactics used for the ¬ (negation) operator: intros, apply, have, exact
-
-  --------------------------------------------------------------------------/
-
-  theorem contrapositive (P Q : Prop) : (Q → P) → (¬P → ¬Q) :=
-  begin
-    -- remember that if the target is ⊢ ¬Q then intros hq, will create a hypothesis hq : Q
-    sorry,
-  end
-
-  theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
-  begin
-    sorry,
-  end
-
-
-
 
 .. table::
   :widths: 15, 45, 45
@@ -386,6 +188,209 @@ The tactics negation are the same as the tactics for ``implies``.
   |              | ``⊢ Q → P``                              |                                            |
   |              | with the same set of hypotheses.         |                                            |
   +--------------+------------------------------------------+--------------------------------------------+
+  
+And/Or 
+=======
+
+**or** (``∨``), **and** (``∧``), in type theory are exactly the same as in set theory.
+
+There are two tactics in Lean for dealing with ``∧``:
+
+1. ``split``
+2. ``cases``
+
+and three tactics in Lean for dealing with ``∨``:
+
+1. ``left``
+2. ``right``
+3. ``cases``
+
+Their use is best explained through examples.
+
+
+.. code:: lean
+  :name: and_or_example
+
+  /---------------------------------------------------------------
+
+  Tactics used for the ∧ (and) operator: split and cases
+  Tactics used for the ∨ (or) operator: left/right and cases
+
+  --------------------------------------------------------------/
+
+  -- If P ∧ Q is true then P is true.
+  example (P Q : Prop) (hpq : P ∧ Q) : P :=
+  begin
+    cases hpq with hp hq,
+    exact hp,
+  end
+
+  -- If P is true and Q is true then P ∧ Q is true.
+  example (P Q : Prop) (hp : P) (hq : Q) : P ∧ Q :=
+  begin
+    split,
+    exact hp,
+    exact hq,
+  end
+
+  -- If P is true then P ∨ Q is true.
+  example (P Q : Prop) (hp : P) : P ∨ Q :=
+  begin
+    left,
+    exact hp,
+  end
+
+  -- If P ∨ P is true then P is true.
+  example (P : Prop) (hpp : P ∨ P) : P :=
+  begin
+    cases hpp with hp1 hp2,
+    exact hp1,
+    exact hp2,
+  end
+
+  /---------------------------------------------------------------
+
+  Your turn.
+
+  --------------------------------------------------------------/
+
+  -- If P ∧ Q is true then Q ∧ P is true.
+  example (P Q : Prop) (hpq : P ∧ Q) : Q ∧ P :=
+  begin
+    sorry,
+  end
+
+  -- If P ∧ Q is true then Q ∧ P is true.
+  example (P Q : Prop) (hpq : P ∧ Q) : Q ∧ P :=
+  begin
+    sorry,
+  end
+
+  -- If P ∨ Q is true then Q ∨ P  is true.
+  example (P Q : Prop) (hpq : P ∨ Q) : Q ∨ P :=
+  begin
+    sorry,
+  end
+
+  -- If P ∧ Q is true then P ∨ Q is true.
+  example (P Q : Prop) (hpq : P ∧ Q) : P ∨ Q :=
+  begin
+    sorry,
+  end
+
+
+Implies 
+========
+
+**implies** (``→``) is a very interesting operator in type theory.
+A proof of ``P → Q`` is very literally a function ``f : P → Q``.
+
+In set theory, ``P → Q`` is true if either both ``P`` and ``Q`` are true (case 1) or if ``P`` is false (case 2).
+If there is a function ``f : P → Q`` then every proof ``hp : P`` produces a proof ``f(hp) : Q`` (case 1).
+If ``P`` is false then ``P`` is *empty*, and there is always an `empty function`_ from an empty type to any type ``Q`` (case 2).
+There are four different tactics you can use to deal with **implies** (``→``)
+
+1. ``intros``
+2. ``apply``
+3. ``have``
+4. ``exact``
+
+
+.. _`empty function`: https://en.wikipedia.org/wiki/Function_(mathematics)#empty_function
+
+.. code:: lean
+  :name: implies_examples
+
+  /-------------------------------------------------------------------------
+
+  Tactics used for the → (implies) operator: intros, apply, have, exact
+
+  --------------------------------------------------------------------------/
+
+  -- P implies P.
+  theorem tautology2 (P: Prop) : P → P :=
+  begin
+    intros hp,
+    exact hp,
+  end
+
+  -- If P implies Q and Q implies R then P implies R.
+  example (P Q R S : Prop) (f : P → Q) (g : Q → R) : P → R :=
+  begin
+    intros hp,
+    have hq := f (hp),
+    exact g (hq),
+  end
+
+  -- If P implies Q and Q implies R then P implies R.
+  example (P Q R S : Prop) (hp : P) (f : P → Q) (g : Q → R) : R :=
+  begin
+    apply g,
+    apply f,
+    exact hp,
+  end
+
+  -- If P implies Q and Q implies R then P implies R.
+  example (P Q R S : Prop) (hp : P) (f : P → Q) (g : Q → R) : R :=
+  begin
+    have hq := f (hp),
+    apply g,
+    exact hq,
+  end
+
+
+  /-------------------------------------------------------------------------
+
+  Your turn.
+
+  --------------------------------------------------------------------------/
+
+  example (P Q : Prop) : P → (Q → P) :=
+  begin
+    sorry,
+  end
+
+  example (P Q R : Prop) : (P → R) ∧ (Q → R) → ((P ∨ Q) → R):=
+  begin
+    sorry,
+  end
+
+  -- need some more problems here
+
+
+Negation 
+=========
+
+**negation** (``¬``) is another very interesting operator in type theory.
+There is a proposition ``false : Prop`` in type theory which has no proof (and is *empty*).
+The negative of a proposition ``¬ P`` is a function ``f : P → false``.
+This follows from the fact that if a proposition implies a false proposition then it must itself be false.
+The tactics negation are the same as the tactics for ``implies``.
+
+
+.. code:: lean
+
+  /-------------------------------------------------------------------------
+
+  Tactics used for the ¬ (negation) operator: intros, apply, have, exact
+
+  --------------------------------------------------------------------------/
+
+  theorem contrapositive (P Q : Prop) : (Q → P) → (¬P → ¬Q) :=
+  begin
+    -- remember that if the target is ⊢ ¬Q then intros hq, will create a hypothesis hq : Q
+    sorry,
+  end
+
+  theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
+  begin
+    sorry,
+  end
+
+
+
+
+
 
 
 
