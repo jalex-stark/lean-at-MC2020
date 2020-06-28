@@ -4,11 +4,15 @@ Lean at MC 2020
 ===================
 
 .. toctree::
+   :maxdepth: 1
+
+   introduction
+
+.. toctree::
    :glob:
    :numbered: 2
    :maxdepth: 3
    
-   introduction
    day*
 
 .. toctree::

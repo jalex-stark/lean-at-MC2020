@@ -143,34 +143,34 @@ In the following problems, replace ``sorry`` with ``norm_num``, ``ring``, ``lina
 Exercises
 ================
 
-Summing by induction
---------------------
-You're going to end up with a goal state that has both nats and ints in it.
-Use push_cast if you want to think about it as an int statement, and norm_cast if you want to think about it as a nat statement.
-(Hint: the integers are a ring and the naturals are not.)
+.. Summing by induction
+.. --------------------
+.. You're going to end up with a goal state that has both nats and ints in it.
+.. Use push_cast if you want to think about it as an int statement, and norm_cast if you want to think about it as a nat statement.
+.. (Hint: the integers are a ring and the naturals are not.)
 
-.. code:: lean 
-  :name: summing_by_induction
+.. .. code:: lean 
+..   :name: summing_by_induction
 
-  import tactic
-  import data.int.basic
+..   import tactic
+..   import data.int.basic
 
-  -- by landing in ℤ, we avoid the perils of nat subtraction
-  def f : ℕ → ℤ
-  | 0 := 0
-  | (n + 1) := n + f n
+..   -- by landing in ℤ, we avoid the perils of nat subtraction
+..   def f : ℕ → ℤ
+..   | 0 := 0
+..   | (n + 1) := n + f n
 
-  example : f 1 = 1 := by refl
+..   example : f 1 = 1 := by refl
 
-  #check nat.succ_eq_add_one
-  example (n : ℕ) : 2 * f n = n * (n - 1) :=
-  begin
-    induction n with d hd, 
-    -- n = 0 base case
-    { sorry }, 
-    -- inductive step
-    sorry
-  end
+..   #check nat.succ_eq_add_one
+..   example (n : ℕ) : 2 * f n = n * (n - 1) :=
+..   begin
+..     induction n with d hd, 
+..     -- n = 0 base case
+..     { sorry }, 
+..     -- inductive step
+..     sorry
+..   end
 
 
 
