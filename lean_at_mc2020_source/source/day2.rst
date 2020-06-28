@@ -1,145 +1,176 @@
 .. _day2:
 
 ***********************
-Inductive types
+Natural numbers in Lean
 ***********************
 
+Today, we will start manipulating natural numbers in Lean. 
+Lean's `mathlib library <https://leanprover-community.github.io/mathlib_docs/>`__ contains several standard axioms, definitions, theorems, and proofs from which one can to build more complicated math.
+We will focus on how to *use* these to prove more complicated theorems and later on go deeper into some of the definitions.
+
+.. For now, we just need the fact that the natural numbers are defined as the type``0, 0.succ, 0.succ.succ, 0.succ.succ.succ, ...`` and then we add some pretty symbols ``1 := 0.succ``, ``2 := 0.succ.succ``, and so on.
+
 Equality 
-=========
-Equality is a non-trivial thing in type theory. In math we use the equality symbol "=" to mean two different things 
+============
 
-.. math:: 
+.. table::
+  :widths: 40, 60
 
-  \mathrm{let} \:\: x &= 5 \\
-  (x+1)^2 &= x^2 + 2 x + 1
+  +--------------------+-------------------------------------------------------+
+  | ``refl``           | Closes the current goal if the target is ``⊢ P = P``. |
+  +--------------------+-------------------------------------------------------+
+  | ``symmetry``       | If the target of the current goal is                  |
+  |                    | ``⊢ P = Q`` then                                      |
+  |                    | ``symmetry,``                                         |
+  |                    | changes it to                                         |
+  |                    | ``⊢ Q = P``.                                          |
+  +--------------------+-------------------------------------------------------+
+  | ``symmetry at hf`` | If                                                    |
+  |                    | ``hf : P = Q``                                        |
+  |                    | is a hypothesis in the current goal, then             |
+  |                    | ``symmetry at hf,``                                   |
+  |                    | changes it to                                         |
+  |                    | ``hf : Q = P``.                                       |
+  +--------------------+-------------------------------------------------------+
+  | ``rw hf``          | If                                                    |
+  |                    | ``hf : P = Q``                                        |
+  |                    | is a hypothesis in the current goal, then             |
+  |                    | ``rw hf,``                                            |
+  |                    | replaces the first occurrence of                      |
+  |                    | ``P``                                                 |
+  |                    | in the target with                                    |
+  |                    | ``Q``.                                                |
+  +--------------------+-------------------------------------------------------+
+  | ``rw hf at hp``    | If                                                    |
+  |                    | ``hf : P = Q``                                        |
+  |                    | and                                                   |
+  |                    | ``hp : R``                                            |
+  |                    | are hypotheses in the current goal, then              |
+  |                    | ``rw hf at hp,``                                      |
+  |                    | replaces the first occurrence of                      |
+  |                    | ``P``                                                 |
+  |                    | in                                                    |
+  |                    | ``R``                                                 |
+  |                    | with                                                  |
+  |                    | ``Q``.                                                |
+  +--------------------+-------------------------------------------------------+
 
-The first statement is simply assigning the value ``5`` to the variable ``x``. This is called *definitional equality* and in Lean this is denoted using ``:=``. You have already seen this in the ``have`` tactic. The second statement is in fact a *proposition* that requires a proof! This is called *propositional equality*.
+Creating subgoals  
+==============================
 
 
+.. table::
+  :widths: 30, 70
 
-Natural numbers in Lean 
-=======================
+  +-------------------+---------------------------------------------------------+
+  | ``have hp := P,`` | adds the hypothesis                                     |
+  |                   | ``hp : P``                                              |
+  |                   | to the current goal if                                  |
+  |                   | ``hp``                                                  |
+  |                   | is a term of type                                       |
+  |                   | ``P``.                                                  |
+  +-------------------+---------------------------------------------------------+
+  | ``have hp : P,``  | Adds the hypothesis                                     |
+  |                   | ``hp : P``                                              |
+  |                   | to the current goal and opens a new subgoal with target |
+  |                   | ``⊢ P``.                                                |
+  |                   | The new subgoal becomes the current goal.               |
+  +-------------------+---------------------------------------------------------+
 
-The following axioms are the axioms isolated by Peano which uniquely characterize
-the natural numbers.
+Trivial statements
+====================
 
-* a term ``0 : mynat``, interpreted as the number zero.
-* a function ``succ : mynat → mynat``, with ``succ n`` interpreted as "the number after ``n``".
-* The principle of mathematical induction:
-  if ``P(0)`` is true and for every natural number ``d`` we know that ``P(d) → P(succ d)``, then ``P(n)`` must be true for every natural number ``n``.
+.. table::
+  :widths: 20, 80
 
+  +--------------------+---------------------------------------------------------------------------------------+
+  | Tactic             | Use                                                                                   |
+  +====================+=======================================================================================+
+  | ``norm_num``       | ``norm_num`` is Lean's calculator.                                                    |
+  |                    | If the goal has a proof that involves no variables but just arithmetic                |
+  |                    | and numbers then ``norm_num`` will resolve this goal                                  |
+  +--------------------+---------------------------------------------------------------------------------------+
+  | ``norm_num at hp`` | If ``hp : P`` is an assumption then ``norm_num at hp``                                |
+  |                    | tries to use simplify ``hp`` using just arithmetic                                    |
+  +--------------------+---------------------------------------------------------------------------------------+
+  | ``ring``           | ``ring`` is a tactic for simplifies basic algebraic operations                        |
+  +--------------------+---------------------------------------------------------------------------------------+
+  | ``ring at hp``     | If ``hp : P`` is an assumption then ``ring at hp``                                    |
+  |                    | tries to use simplify ``hp`` using just algebraic operations                          |
+  +--------------------+---------------------------------------------------------------------------------------+
+  | ``linarith``       | ``linarith`` can manipulate and close goals involving simple inequalities             |
+  +--------------------+---------------------------------------------------------------------------------------+
+  | ``simp``           | ``simp`` is a very complex tactic that tries to use theorems from the mathlib library |
+  |                    | to close the goal.                                                                    |
+  |                    | You should only ever use ``simp`` to close a goal because its behavior                |
+  |                    | changes as more theorems get added to the library.                                    |
+  +--------------------+---------------------------------------------------------------------------------------+
 
-The first axiom says that ``0`` is a natural number. The second says that there
-is a ``succ`` function which eats a number and spits out the number after it,
-so ``succ 0 = 1``, ``succ 1 = 2`` and so on.
-
-Peano's insights were firstly that these axioms completely characterise
-the natural numbers, and secondly that these axioms alone can be used to build
-a whole bunch of other structure on the natural numbers, for example
-addition, multiplication and so on.
-
-
-
-
-.. /- Lemma : no-side-bar
-.. If $\operatorname{succ}(a) = b$, then
-.. $$\operatorname{succ}(\operatorname{succ}(a)) = \operatorname{succ}(b).$$
-.. -/
+In the following problems, replace ``sorry`` with ``norm_num``, ``ring``, ``linarith``, ``simp`` and see which of these simplifiers close the goal.
 
 .. code:: lean 
 
-  lemma example3 (a b : mynat) (h : succ a = b) : succ(succ(a)) = succ(b) :=
-  begin 
+  import tactic data.nat.prime 
+
+  /-
+  norm_num,
+  ring,
+  linarith,
+  simp,
+  -/
+
+  example (m n : ℕ) : 1 > 0 :=
+  begin
     sorry,
   end
 
+  example (m n : ℤ ) :  m^2 - n^2 = (m + n) * (m - n) :=
+  begin
+    sorry,
+  end
 
-Reflexivity (refl) tactic
-----------------------------
+  example : 101 ∣ 2020 :=
+  begin
+    sorry,
+  end
 
-Let's start with the ``refl`` tactic. ``refl`` stands for "reflexivity", which is a fancy
-way of saying that it will prove any goal of the form ``A = A``. It doesn't matter how
-complicated ``A`` is, all that matters is that the left hand side is *exactly equal* to the
-right hand side (a computer scientist would say "definitionally equal"). 
-For example, ``x * y + z = x * y + z`` can be proved by ``refl``, but ``x + y = y + x`` cannot.
-
-Remember that the goal is
-the thing with the weird ⊢ thing just before it. The goal in this case is ``x * y + z = x * y + z``,
-where ``x``, ``y`` and ``z`` are some of your very own natural numbers.
-That's a pretty easy goal to prove -- you can just prove it with the ``refl`` tactic.
-Where it used to say ``sorry``, write
-
-.. code-block:: 
-
-    refl,
-    
-**and don't forget the comma**. Then hit enter to go onto the next line.
-If all is well, Lean should tell you "Proof complete!" in the top right box, and there
-should be no errors in the bottom right box. 
-
-.. code-block:: lean
-
-    lemma example1 (x y z : ℕ) : x * y + z = x * y + z :=
-    begin 
-      sorry,
-    end
-
-Library_search tactic 
----------------------
-
-Norm_num tactic 
----------------
-
-Simp tactic 
------------
-
-Have tactic 
------------- 
-
-Set tactic 
------------
-
-
-Integers in Lean 
-================
-
-
-norm_cast tactic 
-----------------
-
-
-
+  #check nat.prime 
+  example : 101.prime := 
+  begin 
+    sorry,
+  end 
 
 Exercises
 ================
 
-Summing by induction
---------------------
-You're going to end up with a goal state that has both nats and ints in it.
-Use push_cast if you want to think about it as an int statement, and norm_cast if you want to think about it as a nat statement.
-(Hint: the integers are a ring and the naturals are not.)
+.. Summing by induction
+.. --------------------
+.. You're going to end up with a goal state that has both nats and ints in it.
+.. Use push_cast if you want to think about it as an int statement, and norm_cast if you want to think about it as a nat statement.
+.. (Hint: the integers are a ring and the naturals are not.)
 
-.. code:: lean 
-   :name: summing_by_induction
+.. .. code:: lean 
+..   :name: summing_by_induction
 
-    import tactic
-    import data.int.basic
+..   import tactic
+..   import data.int.basic
 
-    def f : ℕ → ℤ
-    | 0 := 0
-    | (n + 1) := n + f n
+..   -- by landing in ℤ, we avoid the perils of nat subtraction
+..   def f : ℕ → ℤ
+..   | 0 := 0
+..   | (n + 1) := n + f n
 
-    example : f 1 = 1 := by refl
+..   example : f 1 = 1 := by refl
 
-    #check nat.succ_eq_add_one
-    example (n : ℕ) : 2 * f n = n * (n - 1) :=
-    begin
-      induction n with d hd, 
-      -- n = 0 base case
-      { sorry }, 
-      -- inductive step
-      sorry
-    end
+..   #check nat.succ_eq_add_one
+..   example (n : ℕ) : 2 * f n = n * (n - 1) :=
+..   begin
+..     induction n with d hd, 
+..     -- n = 0 base case
+..     { sorry }, 
+..     -- inductive step
+..     sorry
+..   end
 
 
 
@@ -150,18 +181,18 @@ Meet interval_cases
 interval_cases can reduce the problem to check the cases c = 0 and c = 1. 
 
 .. code:: lean 
-   :name: interval_cases
+  :name: interval_cases
 
-    import tactic
+  import tactic
 
-    lemma one_lt_of_nontrivial_factor 
-      {b c : ℕ} (hb : b < b * c) :
-    1 < c :=
-    begin
-      contrapose! hb, 
-      interval_cases c,
-      sorry
-    end
+  lemma one_lt_of_nontrivial_factor 
+    {b c : ℕ} (hb : b < b * c) :
+  1 < c :=
+  begin
+    contrapose! hb, 
+    interval_cases c,
+    sorry
+  end
 
 
 

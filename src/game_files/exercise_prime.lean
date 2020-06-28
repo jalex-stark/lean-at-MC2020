@@ -45,7 +45,11 @@ end
 
 example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
 begin
-  exact bot_lt_iff_ne_bot,
+  split,
+  {intros, linarith,},
+  contrapose!,
+  simp,
+  -- exact bot_lt_iff_ne_bot,
 end
 
 lemma nontrivial_product_of_not_prime

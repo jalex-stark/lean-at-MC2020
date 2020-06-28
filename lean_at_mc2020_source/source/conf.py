@@ -33,7 +33,8 @@
 # ones.
 extensions = ['sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
-    'lean_sphinx']
+    'lean_sphinx',
+    'sphinx.ext.todo']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -77,7 +78,7 @@ exclude_patterns = ['build', 'Thumbs.db', '.DS_Store', '.venv', 'exclude']
 pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
+todo_include_todos = True
 
 # use numbering for section references with :numref:, e.g. 'Section 3.2'.
 numfig = True
@@ -104,7 +105,7 @@ html_theme_options = {
                         'Lean Documentation': 'https://leanprover-community.github.io/mathlib_docs/',
                         'Leanprover Community':'https://leanprover-community.github.io/'},
     'sidebar_width' : '230px',
-    # 'page_width' : '960px',
+    'page_width' : '95%',
     # 'fixed_sidebar' : True
 }
 
