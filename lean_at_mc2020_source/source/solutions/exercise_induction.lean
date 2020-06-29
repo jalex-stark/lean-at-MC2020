@@ -25,6 +25,28 @@ end
 open_locale big_operators
 open finset
 
+
+
+-- by landing in ℤ, we avoid the perils of nat subtraction
+def f : ℕ → ℕ
+| 0 := 0
+| (n + 1) := n + 1 + f n
+
+example : f 1 = 1 := 
+begin
+  unfold f,
+end
+
+example (n : ℕ) : 2 * f n = n * (n + 1) :=
+begin
+  induction n with d hd,  
+  -- base case
+  { unfold f, simp },
+  rw nat.succ_eq_add_one,
+  unfold f, ring, 
+  rw hd, ring,
+end
+
 variables {R : Type*} [comm_ring R]
 example (n : ℕ) (a : R) : 
 (1 - a) * ∑ k in range n, a^k = 1 - a ^n :=
@@ -34,13 +56,12 @@ begin
   intro, ring,
 end
 
-example (n k : ℕ) : 
-(n+1).choose (k+1) = n.choose k + n.choose (k + 1) :=
+-- doing your induction "by hand"
+example (n : ℕ) (a : R) : 
+(1 - a) * ∑ k in range n, a^k = 1 - a ^n :=
 begin
-  cases n, simp,
-end
-example (n : ℕ) : 
-∑ k in range n, n.choose k = 2 ^ n :=
-begin
-  
+  induction n with d hd,
+  { simp },
+  rw [sum_range_succ, mul_add, hd, nat.succ_eq_add_one],
+  ring_exp,
 end
