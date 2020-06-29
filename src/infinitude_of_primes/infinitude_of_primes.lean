@@ -1,6 +1,5 @@
 import tactic
 import data.nat.prime
-set_option trace.simp_lemmas true
 
 open nat
 

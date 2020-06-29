@@ -1,9 +1,6 @@
 import tactic
 import data.nat.basic
 import data.nat.prime
-import data.real.basic
-import data.real.irrational
-
 
 noncomputable theory
 open_locale classical
@@ -21,14 +18,15 @@ end
 lemma gcd_div_left (a b : ℕ) : (nat.gcd a b) ∣ a :=
 begin
   refine nat.gcd_eq_right_iff_dvd.mpr _,
-  rw h, simp only [nat.gcd_gcd_self_right_left],
+  simp only [nat.gcd_gcd_self_right_left],
 end
 
 
 -- maynbe the next one is a level and the previous one is provided?
 lemma gcd_div_right (a b : ℕ) : (nat.gcd a b) ∣ b :=
 begin
-  rw nat.gcd_comm, apply gcd_div_left,
+  rw nat.gcd_comm, 
+  apply gcd_div_left,
 end
 
 
@@ -43,9 +41,15 @@ end
 lemma sq_eq_zero_iff_eq_zero (m : ℕ) : m^2 = 0 ↔ m = 0 :=
 begin
   split, 
-    { apply eq_zero_of_sq_eq_zero },
-    intro h, rw h, ring,
+    {exact eq_zero_of_sq_eq_zero m,},
+    { intro h, 
+      rw h, 
+      ring,}
 end
+
+-- lemma mul_right_eq_self_iff {a b : ℕ} (ha : 0 < a) : a * b = a ↔ b = 1 :=
+-- suffices a * b = a * 1 ↔ b = 1, by rwa mul_one at this,
+-- nat.mul_right_inj ha
 
 -- this lemma needs a better name
 lemma gcd_spec 
@@ -224,14 +228,14 @@ end
 -- lemma rat.not_irrational (q : ℚ) : ¬irrational q := λ h, h ⟨q, rfl⟩
 -- def irrational (x : ℝ) := x ∉ set.range (coe : ℚ → ℝ)
 
-lemma real_rat_irrat (r:real) : (∃ q: ℚ , r = q) ∨ irrational r := 
-begin 
-sorry,
-end 
+-- lemma real_rat_irrat (r:real) : (∃ q: ℚ , r = q) ∨ irrational r := 
+-- begin 
+-- sorry,
+-- end 
 
-#check real_rat_irrat (real.sqrt 2) 
+-- #check real_rat_irrat (real.sqrt 2) 
 
-theorem sqrt2_irrational: (irrational (real.sqrt 2)) := 
-begin 
-sorry,
-end
+-- theorem sqrt2_irrational: (irrational (real.sqrt 2)) := 
+-- begin 
+-- sorry,
+-- end
