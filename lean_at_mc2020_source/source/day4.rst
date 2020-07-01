@@ -1,5 +1,5 @@
 .. _day4:
 
 ***********************
-Sqrt 2 is irrational
+A Number Theory Puzzle
 ***********************

@@ -10,7 +10,7 @@ Lean at MC 2020
 
 .. toctree::
    :glob:
-   :numbered: 2
+   :numbered: 
    :maxdepth: 3
    
    day*
@@ -18,6 +18,7 @@ Lean at MC 2020
 .. toctree::
    :maxdepth: 1
 
+   symbols
    tactics
 
    

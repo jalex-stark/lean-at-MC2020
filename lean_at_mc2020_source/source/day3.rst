@@ -1,53 +1,137 @@
 .. _day3:
 
 ***************************
-Type classes and instances
+Infinitude of primes
 ***************************
 
+Infinitude of Primes 
+======================
+The way we will prove that there are infinitely many primes is by showing that 
+**for every natural number n, the smallest prime factor of (n! + 1) is greater than n**.
+The steps will be following:
 
-Many technical lemmas 
-=====================
+1. We'll let ``p`` be the smallest factor of ``n! + 1`` that is bigger than 1.
+2. We'll show that ``p`` is a prime.
+3. Next we'll show that ``p > n``.  This is a proof by contradiction. 
+  4. Suppose on the contrary that ``p ≤ n``.
+  5. This implies that ``p`` divides ``n!``.
+  6. As ``p`` divides ``n!`` and ``n! + 1``, ``p`` divides 1.
+  7. This is a contradiction.
 
 
-.. code-block:: lean
-   :name: two_dvd_of_two_dvd_sq
 
-    lemma two_dvd_of_two_dvd_sq (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
+Odds and evens
+---------------
+Here's an example with statements about natural numbers.
+We started the proof by rewriting with something from the library.
+Try finishing the proof with just your logic tools --- you shouldn't need to know how natural numbers are implemented.
+
+.. code:: lean
+   :name: odds_and_evens
+
+    import tactic
+    import data.nat.parity
+
+    lemma even_of_odd_add_odd
+      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
+    nat.even (a + b) :=
     begin
-      intros eq₁,
-      have : 2 ∣ n^2, by { use m^2, exact eq.symm eq₁},
-      exact nat.prime.dvd_of_dvd_pow nat.prime_two ‹2 ∣ n^2 ›,
+      rw nat.even_add,
     end
 
-.. code-block:: lean
-   :name: gcd_div_left
 
-    lemma gcd_div_left (a b : ℕ) : (nat.gcd a b) ∣ a :=
-    begin
-      simp [nat.gcd_eq_right_iff_dvd],
-    end
+.. * - ``have``
+..     - The tactic ``have hp : P,`` adds the hypothesis ``hp : P`` to the current goal 
+..       and opens a new subgoal with target ``⊢ P``. 
+      
+..       Mathematically, this is like introducing an intermediate claim.
 
-.. code-block:: lean
-   :name: gcd_div_right
 
-    lemma gcd_div_right (a b : ℕ) : (nat.gcd a b) ∣ b :=
-    begin
-      rw nat.gcd_comm, apply gcd_div_left,
-    end
+In Lean, division is defined as ``p | a`` is defined as ``∃ k : ℕ, a = p * k``.
 
-.. code-block:: lean
-   :name: eq_zero_of_sq_eq_zero
 
-    lemma eq_zero_of_sq_eq_zero (m : ℕ) : m^2 = 0 → m = 0 :=
-    begin
-      simp [nat.pow_two, nat.mul_eq_zero], 
-    end
+..code::
 
-.. code-block:: lean
-   :name: sq_eq_zero_iff_eq_zero
+    #eval nat.min_fac 51 -- smallest divisor of n that is greater than 1, unless n = 1
+    #eval nat.fact 5  -- n factorial
 
-  lemma sq_eq_zero_iff_eq_zero (m : ℕ) : m^2 = 0 ↔ m = 0 :=
+    #check nat.min_fac_prime -- smallest divisor of n is prime
+    #check nat.min_fac_pos -- smallest divisor of n is positive
+    #check nat.min_fac_dvd -- smallest divisor of n divides n
+
+    #check nat.fact_pos -- n factorial is always > 0
+    #check nat.dvd_fact -- n divides n factorial
+
+    #check nat.dvd_one 
+    #check nat.dvd_sub
+
+    #print nat.prime
+    /-
+    infinitude_of_primes.lean:31:0: information print result
+    def nat.prime (p : ℕ): ℕ → Prop :=
+      2 ≤ p ∧ ∀ (m : ℕ), m ∣ p → m = 1 ∨ m = p
+    -/
+
+1.
+
+.. code:: lean 
+  :name: dvd_sub
+
+  import tactic data.nat.prime
+
+  #check @nat.dvd_sub
+  /- nat.dvd_sub : ∀ {k m n : ℕ}, n ≤ m → k ∣ m → k ∣ n → k ∣ m - n -/
+
+
+  theorem dvd_sub' (p a b : ℕ) : (p ∣ a + b) → (p ∣ a) → (p ∣ b) :=
   begin
-    split, { apply eq_zero_of_sq_eq_zero },
-    sorry
+    have H : a ≤ a + b, {simp, },
+    have K : (a + b) - a = b, {simp,},
+    have := (@nat.dvd_sub p (a + b) a H),
+    rw K at this,
+    tauto,
   end
+
+  lemma prime_ge_2 (p:nat) (pp: p.prime) : 2 ≤ p :=
+  begin
+    cases pp,
+    exact pp_left,
+  end
+
+  lemma prime_not_dvd_one_aux (p:nat) (pp: 2 ≤ p) : ¬ p ∣ 1 :=
+  begin
+    contrapose! pp,
+    have := @nat.dvd_one p,
+    rw this at pp,
+    linarith,
+  end
+
+  lemma prime_not_dvd_one (p:nat) (pp: nat.prime p) : ¬ p ∣ 1 :=
+  begin
+    apply prime_not_dvd_one_aux,
+    exact prime_ge_2 p pp,
+  end
+
+  theorem exists_infinite_primes (n : ℕ) : ∃ p, nat.prime p ∧ p ≥ n :=
+  begin
+    set p:= nat.min_fac (n.fact + 1), use p,
+    have key1 : p ∣ n.fact + 1, by exact nat.min_fac_dvd (n.fact + 1),
+    have pp: nat.prime p,
+    {
+      apply nat.min_fac_prime,
+      have := nat.fact_pos n,
+      linarith,
+    },
+    split, assumption,
+    {
+      by_contradiction,
+      push_neg at a,
+      have key2 : p ∣ n.fact, apply nat.dvd_fact,
+      exact nat.min_fac_pos (n.fact + 1),
+      linarith,
+      have := dvd_sub' p n.fact 1 key1 key2,
+      exact prime_not_dvd_one p pp this, -- can get rid of this
+    },
+  end
+
+

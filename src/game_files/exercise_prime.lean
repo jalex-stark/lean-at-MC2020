@@ -1,20 +1,22 @@
 import data.nat.prime
+import data.nat.modeq
 import data.nat.parity
 import tactic
 
+-- set_option pp.notation false 
 -- include all of this as exercises on day 2
 
 -- can you do this in tactic mode with only intro, apply, and exact?
-theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
+example (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
 begin
-  rw classical.not_not,
+  rw classical.not_not, tauto,
 end
 
 
 
 example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
 begin
-  library_search,
+  exact nat.prime.eq_two_or_odd,
 end
 
 #check @nat.prime.eq_two_or_odd
@@ -26,13 +28,73 @@ begin
 end
 
 
+#check @nat.even_iff
+#check @nat.mod_two_eq_zero_or_one
+#check @nat.not_even_iff
+
 #check @nat.even_add
+#check @nat.modeq.modeq_add_cancel_right
+#check @nat.modeq.modeq_add_cancel_left
+-- ∀ {n a b c d : ℕ}, a ≡ b [MOD n] → a + c ≡ b + d [MOD n] → c ≡ d [MOD n]
+
+-- lemma even_add : ∀ (m n : ℕ), (m + n).even ↔ (m.even ↔ n.even) :=
+-- begin 
+--   intros,
+--   rw nat.even_iff,
+--   rw nat.even_iff,
+--   rw nat.even_iff,
+
+--   split,
+--   begin 
+--     intros, 
+--     split,
+--     begin 
+--       intros,
+--       have : 0 = 0 + 0, by simp,
+--       rw this at a,
+--       exact @nat.modeq.modeq_add_cancel_left 2 m 0 n 0 a_1 a,
+--     end,
+--     begin 
+--       intros, 
+--       have : 0 = 0 + 0, by simp,
+--       rw this at a,
+--       exact @nat.modeq.modeq_add_cancel_right 2 m 0 n 0 a_1 a,
+--     end,
+--   end,
+--   begin 
+--     intros,
+--     by_cases hp : m % 2 = 0, 
+--     {rw hp at a,
+--     have := (a.1 rfl),
+--     exact @nat.modeq.modeq_add 2 m 0 n 0 hp this,},
+--     {
+--       repeat{rw ←nat.even_iff at *},
+--       sorry,
+--     },
+--   end,
+-- end 
+
 -- tauto
+
+example (p a b : ℕ) : (a % p) = (b % p) → (a = b % p) :=
+begin 
+  sorry,
+end 
+
+#check nat.add_mod_eq_add_mod_left
+
 lemma even_of_odd_add_odd
   {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
 nat.even (a + b) :=
 begin
-  rw nat.even_add, tauto,
+  -- rw nat.even_add, tauto,
+  rw nat.not_even_iff at *,
+  rw nat.even_iff at *,
+
+    -- rw this,
+    -- exact @nat.modeq.modeq_add 2 a 1 b 1 ha hb,
+    sorry,
+  simp,
 end
 
 lemma one_lt_of_nontrivial_factor 

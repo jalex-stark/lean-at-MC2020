@@ -1,5 +1,5 @@
 .. _day5:
 
 **************************
-Set Theory + Group Theory
+Sqrt 2 is irrational
 **************************
