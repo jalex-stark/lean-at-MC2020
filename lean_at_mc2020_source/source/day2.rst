@@ -1,54 +1,118 @@
 .. _day2:
 
 ***************************
-Functions in Lean
+Mathematics in Lean
 ***************************
 
 Lean's `mathlib library <https://leanprover-community.github.io/mathlib_docs/>`__ contains several standard axioms, definitions, theorems, and proofs from which one can to build more complicated math.
 We will focus on how to *use* these to prove more complicated theorems and later on go deeper into some of the definitions.
 We will almost exclusively focus on theorems about natural numbers.
 
-Because Lean uses type theory instead of set theory, 
-many familiar statements look just slightly different in Lean.
+
+Quantifiers 
+============== 
 
 
-Functions with multiple variables
-===================================
-Let us warm up by proving the following.
+In type theory, a proposition ``(∀ x : X, P x)`` is just a function ``X → Prop`` which sends ``x : X`` to ``P x``.
+The tactics for dealing with ``∀`` are hence exactly ones as for ``→``.
 
-.. code:: lean 
-  :name: curry_uncurry
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``cases``
+    - If ``hp : (∃ x : X, P x)`` is a hypothesis, then 
+      ``cases hp with x key,`` breaks it into ``x : X`` and ``key : P x``.
+
+  * - ``use``
+    - If the target of the current goal is ``⊢ ∃ x : X, P x`` 
+      and ``y : X,`` is a hypothesis, then 
+      ``use y,`` changes the target to ``⊢ P y`` and tries to close the goal.
+
+something here.
+
+1. **Lounge paradox**
   
-  -- remember that functions and implications behave the same way in Lean
-  -- and also products for arbitrary types behave exactly like "∧" for propositions
+  There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game. 
+  (See :doc:`hint <../hint_day1_lounge_paradox1>` ).
 
-  theorem curry (P Q R : Type) (f : P × Q → R) : P → (Q → R) := 
-  begin 
-    sorry,
-  end 
+  .. code:: lean
+    :name: lounge_paradox
+
+      import tactic
+      -- the next two lines let us use the by_cases tactic without trouble
+      noncomputable theory
+      open_locale classical
+
+      --BEGIN--
+      theorem lounge 
+        (camper : Type) 
+        (playing : camper → Prop) 
+        (alice : camper) -- making sure that there is at least one camper in the lounge
+        : ∃ x, (playing x → ∀ y, playing y) :=
+      begin
+        by_cases h : ∃ bob, ¬ playing bob,
+        cases h with bob,
+        use bob,
+
+        push_neg at h,
+        use alice,
+        intro ,
+        exact h,
+      end
+      --END--
+
+2. **Barber paradox**
   
-  theorem uncurry (P Q R : Type) (f : P → (Q → R)) : P × Q → R := 
-  begin 
-    sorry,
-  end
 
-These two theorems together imply that a function ``P × Q → R`` is equivalent to a function ``P → (Q → R)``.
-This is called **currying** (the term is named after the computer scientist Haskell Curry).
-Internally, Lean will always curry functions. You will never see a function defined from a product to another type.
-Lean will also drop the brackets so that ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
+  Consider the "barber paradox," that is, the claim that in a certain town there is a (male) barber that shaves all and only the men who do not shave themselves. Prove that this is a contradiction:
+
+  .. code-block:: lean
+
+    import tactic
+    -- the next two lines let us use the by_cases tactic without trouble
+    noncomputable theory
+    open_locale classical
+
+    --BEGIN--
+    variables (men : Type) (barber : men) 
+    variable  (shaves : men → men → Prop)
+
+    example (h : ∀ x : men, shaves barber x ↔ ¬ shaves x x) : 
+      false := 
+      begin 
+
+      end 
+    --END--
 
 
-Consider a function ``f : P → Q → R → S`` and elements ``hp : P``, ``hq : Q``, ``hr : R``.
-Then 
-``f(hp)`` is of type ``Q → R → S``, ``((f (hp)) hq)`` is of type ``R → S``, and ``(((f (hp)) hq) hr)`` is of type ``S``.
-This is looking less and less fun.
-Lean allows you to skip the brackets completely. So that 
-``f hp`` is of type ``Q → R → S``, ``f hp hq`` is of type ``R → S``, and ``f hp hq hr`` is of type ``S``.
+3.  **Surjective functions** 
 
-.. topic:: Brackets in Lean 
+  .. code:: lean 
 
-  * The type ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
-  * The element ``f hp hq hr`` is the same as ``(((f (hp)) hq) hr)``.
+    import tactic 
+    open function
+
+    -- In the remaining of this file, f and g will denote functions from
+    -- ℕ to ℕ.
+    variables (f g : ℕ → ℕ)
+
+    /-
+    surjective (f : X → Y) := ∀ y, ∃ x, f x = y
+    -/
+
+    example (h : surjective (g ∘ f)) : surjective g :=
+    begin
+      sorry,
+    end
+
+    example (hf : surjective f) (hg : surjective g) : surjective (g ∘ f) :=
+    begin
+      sorry,
+    end
+
+  
+
 
 
 
@@ -134,7 +198,7 @@ Fortunately, there are pre-made tactics in Lean for providing such trivial proof
 
 
   #print nat.prime 
-  example : nat.prime p := 
+  example : nat.prime 101 := 
   begin 
     sorry,
   end
@@ -276,8 +340,9 @@ Mathematical Induction
     - If ``n : ℕ`` is a hypothesis and the target of the current goal is a proposition 
       ``⊢ P(n)`` that depends on ``n``,  
       then ``induction n with d hd,`` removes the hypothesis ``n : ℕ`` produces breaks down the current goal into two goals:
-        * the first with target ``⊢ P(0)`` 
-        * the second with two added hypotheses ``d : ℕ`` and ``hd : P(d)`` and target ``⊢ P(d.succ)``.
+      
+      * the first with target ``⊢ P(0)`` 
+      * the second with two added hypotheses ``d : ℕ`` and ``hd : P(d)`` and target ``⊢ P(d.succ)``.
 
       This is precisely the statement of mathematical induction. 
 

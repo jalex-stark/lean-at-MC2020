@@ -11,7 +11,7 @@ Lean at MC 2020
 .. toctree::
    :glob:
    :numbered: 
-   :maxdepth: 3
+   :maxdepth: 2
    
    day*
 

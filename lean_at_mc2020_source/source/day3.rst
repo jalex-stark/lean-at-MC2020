@@ -1,23 +1,8 @@
 .. _day3:
 
-***************************
-Infinitude of primes
-***************************
-
-Infinitude of Primes 
-======================
-The way we will prove that there are infinitely many primes is by showing that 
-**for every natural number n, the smallest prime factor of (n! + 1) is greater than n**.
-The steps will be following:
-
-1. We'll let ``p`` be the smallest factor of ``n! + 1`` that is bigger than 1.
-2. We'll show that ``p`` is a prime.
-3. Next we'll show that ``p > n``.  This is a proof by contradiction. 
-  4. Suppose on the contrary that ``p ≤ n``.
-  5. This implies that ``p`` divides ``n!``.
-  6. As ``p`` divides ``n!`` and ``n! + 1``, ``p`` divides 1.
-  7. This is a contradiction.
-
+***********************
+A Number Theory Puzzle
+***********************
 
 
 Odds and evens
@@ -39,99 +24,96 @@ Try finishing the proof with just your logic tools --- you shouldn't need to kno
       rw nat.even_add,
     end
 
-
-.. * - ``have``
-..     - The tactic ``have hp : P,`` adds the hypothesis ``hp : P`` to the current goal 
-..       and opens a new subgoal with target ``⊢ P``. 
-      
-..       Mathematically, this is like introducing an intermediate claim.
+    import data.nat.prime
+    import data.nat.parity
+    import tactic
 
 
-In Lean, division is defined as ``p | a`` is defined as ``∃ k : ℕ, a = p * k``.
+
+.. code:: lean
+
+    theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
+    begin
+      intros nnnp p, apply nnnp, 
+      intro np, apply np, 
+      apply p,
+    end
 
 
-..code::
+    example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
+    begin
+      library_search,
+    end
 
-    #eval nat.min_fac 51 -- smallest divisor of n that is greater than 1, unless n = 1
-    #eval nat.fact 5  -- n factorial
+    #check @nat.prime.eq_two_or_odd
 
-    #check nat.min_fac_prime -- smallest divisor of n is prime
-    #check nat.min_fac_pos -- smallest divisor of n is positive
-    #check nat.min_fac_dvd -- smallest divisor of n divides n
-
-    #check nat.fact_pos -- n factorial is always > 0
-    #check nat.dvd_fact -- n divides n factorial
-
-    #check nat.dvd_one 
-    #check nat.dvd_sub
-
-    #print nat.prime
-    /-
-    infinitude_of_primes.lean:31:0: information print result
-    def nat.prime (p : ℕ): ℕ → Prop :=
-      2 ≤ p ∧ ∀ (m : ℕ), m ∣ p → m = 1 ∨ m = p
-    -/
-
-1.
-
-.. code:: lean 
-  :name: dvd_sub
-
-  import tactic data.nat.prime
-
-  #check @nat.dvd_sub
-  /- nat.dvd_sub : ∀ {k m n : ℕ}, n ≤ m → k ∣ m → k ∣ n → k ∣ m - n -/
+    lemma eq_two_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
+    begin
+      cases nat.prime.eq_two_or_odd hp, {assumption},
+      rw ← nat.not_even_iff at h, contradiction,
+    end
 
 
-  theorem dvd_sub' (p a b : ℕ) : (p ∣ a + b) → (p ∣ a) → (p ∣ b) :=
-  begin
-    have H : a ≤ a + b, {simp, },
-    have K : (a + b) - a = b, {simp,},
-    have := (@nat.dvd_sub p (a + b) a H),
-    rw K at this,
-    tauto,
-  end
+    lemma even_of_odd_add_odd
+      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
+    nat.even (a + b) :=
+    begin
+      rw nat.even_add, tauto,
+    end
 
-  lemma prime_ge_2 (p:nat) (pp: p.prime) : 2 ≤ p :=
-  begin
-    cases pp,
-    exact pp_left,
-  end
+    lemma one_lt_of_nontrivial_factor 
+      {b c : ℕ} (hb : b < b * c) :
+    1 < c :=
+    begin
+      contrapose! hb, 
+      interval_cases c,
+    end
 
-  lemma prime_not_dvd_one_aux (p:nat) (pp: 2 ≤ p) : ¬ p ∣ 1 :=
-  begin
-    contrapose! pp,
-    have := @nat.dvd_one p,
-    rw this at pp,
-    linarith,
-  end
+    example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
+    begin
+      split,
+      {intros, linarith,},
+      contrapose!,
+      simp,
+    end
 
-  lemma prime_not_dvd_one (p:nat) (pp: nat.prime p) : ¬ p ∣ 1 :=
-  begin
-    apply prime_not_dvd_one_aux,
-    exact prime_ge_2 p pp,
-  end
+    lemma nontrivial_product_of_not_prime
+      {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
+    ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k :=
+    begin
+      have h1 := nat.exists_dvd_of_not_prime2 two_le_k hk,
+      rcases h1 with ⟨a, ⟨b, hb⟩, ha1, ha2⟩,
+      use [a, b], norm_num, 
+      split, assumption,
+      split, rw [hb, lt_mul_iff_one_lt_left], linarith, 
+      cases b, {linarith}, {simp},
+      split, linarith,
+      split, rw hb at ha2, apply one_lt_of_nontrivial_factor ha2,
+      rw hb,
+    end
 
-  theorem exists_infinite_primes (n : ℕ) : ∃ p, nat.prime p ∧ p ≥ n :=
-  begin
-    set p:= nat.min_fac (n.fact + 1), use p,
-    have key1 : p ∣ n.fact + 1, by exact nat.min_fac_dvd (n.fact + 1),
-    have pp: nat.prime p,
-    {
-      apply nat.min_fac_prime,
-      have := nat.fact_pos n,
-      linarith,
-    },
-    split, assumption,
-    {
-      by_contradiction,
-      push_neg at a,
-      have key2 : p ∣ n.fact, apply nat.dvd_fact,
-      exact nat.min_fac_pos (n.fact + 1),
-      linarith,
-      have := dvd_sub' p n.fact 1 key1 key2,
-      exact prime_not_dvd_one p pp this, -- can get rid of this
-    },
-  end
+    -- norm_num, linarith
+    theorem three_fac_of_sum_consecutive_primes 
+      {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
+      (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
+      (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
+    ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
+    begin
+      use 2, have h1 : nat.even (p + q), 
+      { apply even_of_odd_add_odd, 
+        contrapose! p_ne_2, apply eq_two_of_even_prime; assumption, 
+        contrapose! q_ne_2, apply eq_two_of_even_prime; assumption, },
 
+      cases h1 with k hk, 
+      have hk' : ¬ k.prime, 
+      { apply consecutive; linarith },
 
+      have h2k : 2 ≤ k, { have := nat.prime.two_le hp, linarith, },
+      have h2 := nat.exists_dvd_of_not_prime2 _ hk',
+      swap, { exact h2k }, -- for some reason I think it's interesting to have the student remember that they've already proved this
+      rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
+      use [b,c],
+      split, { rw [hk, ← hbc], ring },
+      split, { norm_num },
+      split; assumption,
+    end

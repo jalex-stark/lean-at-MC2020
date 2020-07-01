@@ -1,7 +1,7 @@
 .. _day1:
 
 ************************
-Propositions in Lean
+Logic in Lean
 ************************
 
 Lean is based on logic system called **type theory** instead of **set theory**.
@@ -68,12 +68,7 @@ Such a function exists if and only if ``P`` itself is empty (`empty function <ht
   3. The negation ``¬ P`` is defined as the implication ``P → false``.
 
 
-
-
-Logic in Lean 
-==============================
-
-In Lean, a theorem and its proof is written using the following syntax.
+In Lean, a theorem and its proof are written using the following syntax.
 
 .. code:: lean
 
@@ -123,7 +118,7 @@ We could have written the entire code in a single line. But that way madness lie
 
 
 Implications in Lean 
----------------------
+======================
 We'll start learning tactics by proving implications in Lean.
 The first two tactics we'll learn is ``exact,`` and ``intros _,``. 
 
@@ -249,11 +244,49 @@ For the following exercises, remember that ``¬ P`` is defined as the implicatio
   end
 
 
+Currying and Uncurrying
+===================================
+
+There is no difference between functions and implications in type theory. 
+And products for arbitrary types behave exactly like "∧" for propositions.
+This is a both bug and a feature.
+
+.. code:: lean 
+  :name: curry_uncurry
+
+  theorem curry (P Q R : Type) (f : P × Q → R) : P → (Q → R) := 
+  begin 
+    sorry,
+  end 
+  
+  theorem uncurry (P Q R : Type) (f : P → (Q → R)) : P × Q → R := 
+  begin 
+    sorry,
+  end
+
+These two theorems together imply that a function ``P × Q → R`` is equivalent to a function ``P → (Q → R)``.
+This is called **currying** (the term is named after the computer scientist Haskell Curry).
+Internally, Lean will always curry functions. You will never see a function defined from a product to another type.
+Lean will also drop the brackets so that ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
+
+
+Consider a function ``f : P → Q → R → S`` and elements ``hp : P``, ``hq : Q``, ``hr : R``.
+Then 
+``f(hp)`` is of type ``Q → R → S``, ``((f (hp)) hq)`` is of type ``R → S``, and ``(((f (hp)) hq) hr)`` is of type ``S``.
+This is looking less and less fun.
+Lean allows you to skip the brackets completely. So that 
+``f hp`` is of type ``Q → R → S``, ``f hp hq`` is of type ``R → S``, and ``f hp hq hr`` is of type ``S``.
+
+.. topic:: Brackets in Lean 
+
+  * The type ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
+  * The element ``f hp hq hr`` is the same as ``(((f (hp)) hq) hr)``.
+
 
 Proof by contradiction
-------------------------
+========================
 As it turns out, the converses of three above theorems cannot be proven using just ``exact``, ``intro``, ``have``, and ``apply``.
-See for yourself.
+Can you find which three?
 
 .. code:: lean
 
@@ -272,7 +305,6 @@ See for yourself.
     sorry,
   end
 
-  -- need to provide a hint for this problem 
   example (P : Prop) : ¬ P → ¬ ¬ ¬ P :=
   begin
     sorry,
@@ -352,7 +384,6 @@ Lean provides us the following tactics to use it.
     sorry,
   end
 
-  -- need to provide a hint for this problem 
   example (P : Prop) : ¬ P → ¬ ¬ ¬ P :=
   begin
     sorry,
@@ -361,15 +392,12 @@ Lean provides us the following tactics to use it.
   --END--
 
 
-Logical operators
-----------------------------------------
+Logical Operators
+===================
 In Lean, we use 
 ``∧`` to denote **and**, 
 ``∨`` to denote **or**, 
 and ``↔`` to denote **iff**. 
-
-In type theory, a proposition ``(∀ x : X, P x)`` is just a function ``X → Prop`` which sends ``x : X`` to ``P x``.
-The tactics for dealing with ``∀`` are hence exactly ones as for ``→``.
 
 .. list-table:: 
   :widths: 10 90
@@ -390,14 +418,11 @@ The tactics for dealing with ``∀`` are hence exactly ones as for ``→``.
       If  ``hpq : P ∨ Q`` is a hypothesis, then 
       ``cases hpq with hp hq,`` creates two goals and adds the hypotheses ``hp : P`` and ``hp : Q`` to one each.
 
-      If ``hp : (∃ x : X, P x)`` is a hypothesis, then 
-      ``cases hp with x key,`` breaks it into ``x : X`` and ``key : P x``.
-
   * - ``split``
     - If the target of the current goal is ``⊢ P ∧ Q``, then 
       ``split,`` breaks up the goal into two goals with targets ``⊢ P`` and ``⊢ Q``.
 
-      - If the target of the current goal is ``⊢ P × Q``, then 
+      If the target of the current goal is ``⊢ P × Q``, then 
       ``split,`` breaks up the goal into two goals with targets ``⊢ P`` and ``⊢ Q``.
 
       If the target of the current goal is ``⊢ P ↔ Q``, then 
@@ -411,14 +436,11 @@ The tactics for dealing with ``∀`` are hence exactly ones as for ``→``.
     - If the target of the current goal is ``⊢ P ∨ Q``, then 
       ``right,`` changes the target to ``⊢ Q``.
 
-  * - ``use``
-    - If the target of the current goal is ``⊢ ∃ x : X, P x`` 
-      and ``y : X,`` is a hypothesis, then 
-      ``use y,`` changes the target to ``⊢ P y``.
-
 
 .. code:: lean
   :name: and_or_example
+
+  import tactic
 
   example (P Q : Prop) : P ∧ Q → Q ∧ P :=
   begin
@@ -430,40 +452,65 @@ The tactics for dealing with ``∀`` are hence exactly ones as for ``→``.
     sorry,
   end
 
-  example (P Q R : Prop) : (P → R) ∧ (Q → R) → ((P ∨ Q) → R):=
+  example (P Q R : Prop) : P ∧ false ↔ false :=
   begin
     sorry,
   end
 
-.. todo:: 
-
-  Copy problems from theorem proving in lean here. 
-
-
-.. todo:: 
-
-  Composition of surjective functions is surjective.
-
-.. todo:: 
-
-  Russell's paradox,
+  example (P : Prop) : P ∨ false ↔ P :=
+  begin
+    sorry,
+  end
 
 
-Lounge paradox
---------------------------------------------
-There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game.
 
-.. code:: lean
-   :name: lounge_paradox
 
-    import tactic
-    -- the next two lines let us use the by_cases tactic without trouble
-    noncomputable theory
-    open_locale classical
+Exercises
+---------
 
-    theorem lounge {camper : Type u} (playing : camper → Prop) [inhabited camper] :
-      ∃ x, (playing x → ∀ y, playing y) :=
-    begin
-      have alice := arbitrary camper, -- this works because of "inhabited" above
-      by_cases h : ∃ bob, ¬ playing bob,
-    end
+#. Prove the following identities, replacing the "sorry" placeholders with actual proofs.
+
+    .. code-block:: lean
+
+        variables p q r : Prop
+
+        -- commutativity of ∧ and ∨
+        example : p ∧ q ↔ q ∧ p := sorry
+        example : p ∨ q ↔ q ∨ p := sorry
+
+        -- associativity of ∧ and ∨
+        example : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) := sorry
+        example : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) := sorry
+
+        -- distributivity
+        example : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := sorry
+        example : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) := sorry
+
+        -- other properties
+        example : (p → (q → r)) ↔ (p ∧ q → r) := sorry
+        example : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) := sorry
+        example : ¬(p ∨ q) ↔ ¬p ∧ ¬q := sorry
+        example : ¬p ∨ ¬q → ¬(p ∧ q) := sorry
+        example : ¬(p ∧ ¬p) := sorry
+        example : p ∧ ¬q → ¬(p → q) := sorry
+        example : ¬p → (p → q) := sorry
+        example : (¬p ∨ q) → (p → q) := sorry
+        example : p ∨ false ↔ p := sorry
+        example : p ∧ false ↔ false := sorry
+        example : (p → q) → (¬q → ¬p) := sorry
+
+#. Prove the following identities, replacing the "sorry" placeholders with actual proofs. These require classical reasoning.
+
+    .. code-block:: lean
+
+        open classical
+
+        variables p q r s : Prop
+
+        example : (p → r ∨ s) → ((p → r) ∨ (p → s)) := sorry
+        example : ¬(p ∧ q) → ¬p ∨ ¬q := sorry
+        example : ¬(p → q) → p ∧ ¬q := sorry
+        example : (p → q) → (¬p ∨ q) := sorry
+        example : (¬q → ¬p) → (p → q) := sorry
+        example : p ∨ ¬p := sorry
+        example : (((p → q) → p) → p) := sorry
