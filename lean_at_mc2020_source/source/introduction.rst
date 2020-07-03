@@ -3,9 +3,6 @@
 Introduction
 ============
 
-Getting Started
----------------
-
 Every once in a while, you will see a code snippet like this:
 
 .. code-block:: lean
@@ -16,127 +13,93 @@ Clicking on the ``try it!`` button in the upper right corner will
 open a copy in a window
 so that you can edit it,
 and Lean provides feedback in the ``Lean Goal`` window.
-This book provides lots of challenging exercises for you to do that
-way.
+There are several exercises in these notes to be done that way.
 
-.. TODO: delete this, or update it
 
-.. You can save your changes from VS Code in the usual way, and come back to the
-.. same file by pressing the corresponding ``try it!`` button again.
+What is Lean?
+--------------
+`Lean <https://leanprover.github.io/about/>`__ is an open source proof-checker and a proof-assistant. 
+One can *explain* mathematical proofs to it and it can check their correctness.
+It also simplifies the proof writing process by providing ``goals`` and ``tactics``.
 
-.. If you want to reset the snippet or exercise to the version in the book,
-.. simply delete or rename the file with the changes you have made,
-.. and then press ``try it!`` once again.
-
-.. Sometimes in the text we will quote from a longer example, like so:
-
-.. .. code-block:: lean
-
-..     -- Give an example here
-..     -- Instead of a ``try it!'' button,
-..     -- there should be a ``see more!`` button.
-
-.. In that case, clicking on the ``see more!`` button opens a longer Lean file
-.. and takes you to that line.
-.. These displays are read only,
-.. and you should think of them as part of the main text.
-.. This allows us to describe a long development one piece at a time,
-.. leaving you free to survey the whole development as you please.
-
-.. Of course, you can create other Lean files to experiment.
-.. We have therefore set up the main folder with four subdirectories:
-
-.. * `snippets` contains your edited copies of the snippets in the text.
-
-.. * `exercises` contains your edited copies of the exercises.
-
-.. * `examples` contains the read-only examples we make use of in the text.
-
-.. * `user` is a folder for you use any way you please.
-
-Overview
---------
-
-Put simply, Lean is a tool for building complex expressions in a formal language
-known as *dependent type theory*.
-Every expression has a *type*.
-Some expressions have types like `ℕ` or `ℕ → ℕ`.
-These are mathematical objects.
+Lean is built on top of a formal system called type theory.
+In type theory, every term has a type.
+When translated to math, terms can be either mathematical objects, functions, propositions, or proofs.
+The only two things Lean can do is *create* terms and *check* their types.
+By iterating these two operations Lean can verify complex mathematical proofs.
 
 .. code-block:: lean
 
-    #check 2 + 2
+  def x := 2 + 2                                  -- a natural number
+  def f (x : ℕ) := x + 3                          -- a function
+  def easy_theorem_statement := 2 + 2 = 4         -- a proposition
+  def fermats_last_theorem_statement              -- another proposition
+    :=
+    ∀ n : ℕ,
+    n > 2
+    →
+    ¬ (∃ x y z : ℕ, (x^n + y^n = z^n) ∧ (x ≠ 0) ∧ (y ≠ 0) ∧ (z ≠ 0))
 
-    def f (x : ℕ) := x + 3
+  theorem
+  easy_proof : easy_theorem_statement             -- proof of easy_theorem
+  :=
+  begin
+    exact rfl,
+  end
 
-    #check f
+  theorem 
+  hard_proof : fermats_last_theorem_statement     -- cheating!
+  :=
+  begin
+    sorry,
+  end
 
-Some expressions have type `Prop`.
-These are mathematical statements.
-
-.. code-block:: lean
-
-    #check 2 + 2 = 4
-
-    def fermat_last_theorem :=
-      ∀ x y z n : ℕ, n > 2 → x * y * z ≠ 0 → x^n + y^n ≠ z^n
-
-    #check fermat_last_theorem
-
-Some expressions have a type, `P`, where `P` itself has type `Prop`.
-Such an expression is a proof of the proposition `P`.
-
-.. code-block:: lean
-
-    def fermat_last_theorem :=
-      ∀ x y z n : ℕ, n > 2 → x * y * z ≠ 0 → x^n + y^n ≠ z^n
-
-    -- BEGIN
-    theorem easy : 2 + 2 = 4 := rfl
-
-    #check easy
-
-    theorem hard : fermat_last_theorem := sorry
-
-    #check hard
-    -- END
-
-If you manage to construct an expression of type `fermat_last_theorem` and
-Lean accepts it as a term of that type,
-you have done something very impressive.
-(Using ``sorry`` is cheating, and Lean knows it.)
-So now you know the game.
-All that is left to learn are the rules.
+  #check x
+  #check f
+  #check easy_theorem_statement
+  #check fermats_last_theorem_statement 
+  #check easy_proof
+  #check hard_proof
 
 
-Interactive theorem proving can be frustrating,
-and the learning curve is steep.
-But the Lean community is very welcoming to newcomers,
-and people are available on the `Lean Zulip chat group`_ round the clock
-to answer questions.
-We hope to see you there, and have no doubt that
-soon enough you, too, will be able to answer such questions
-and contribute to the development of *mathlib*.
+How to use these notes 
+-----------------------
+These notes are designed for a 5-day Lean crash course at Mathcamp 2020.
+On Days 1 and 2 you'll learn the basics of type theory and some basic ``tactics`` in Lean. 
+On Days 3, 4, 5 you'll use these to prove increasingly complex theorems: a number theory puzzle, infinitude of primes, and irrationality of :math:`\sqrt{2}`.
 
-So here is your mission, should you choose to accept it:
-dive in, try the exercises, come to Zulip with questions, and have fun.
-But be forewarned:
-interactive theorem proving will challenge you to think about
-mathematics and mathematical reasoning in fundamentally new ways.
-Your life may never be the same.
+These notes provide a sneak-peek into the world of theorem proving in Lean and are by no means comprehensive.
+It is recommended that you simultaneously attempt at least one of the following two options.
 
-*Acknowledgment.* 
+#. Play the `Natural Number Game`_.
+#. Read `Theorem Proving in Lean`_.
+
+The `Natural Number Game`_ is a fun (and highly addictive!) game that proves same basic properties of natural numbers in Lean.
+`Theorem Proving in Lean`_ is a comprehensive online book that covers all the theorem proving aspects of Lean in great details.
+
+The Lean community is very welcoming to newcomers, and people are available on the `Lean Zulip chat group`_ round the clock
+to answer questions. 
+You can also join Kevin Buzzard's `Discord server <https://t.co/DSz6mbw4Oc?amp=1>`__ which has a relatively younger crowd.
+You're highly encouraged to join one or both of these channels.
 
 
-**Further Reading.** 
+Acknowledgments.
+----------------
+These notes are developed by `Apurva Nakade <https://apurvanakade.github.io>`__ and `Jalex Stark <https://jalexstark.com/>`__.
+Large chunks of these notes are from the various learning resources available on the `leanprover-community website <https://leanprover-community.github.io/learn.html>`__.
+The number theory puzzle on Day 3 is from Codewars and the proof of the infinitude of primes on Day 4 is from `mathlib <https://github.com/leanprover-community/mathlib/blob/53c1531/src/data/real/irrational.lean#L83>`__.
 
-#. `The Mechanization of Mathematics`_ 
-#. `The Future of Mathematics`_
-#. `Natural Number Game`_
-#. mathlib_
-#. `Natural Number Game`_
-#. `mathlib repository`_
-#. `Theorem Proving in Lean`_
+
+Further Reading.
+------------------
+#. `Formalizing 100 theorems <http://www.cs.ru.nl/~freek/100/index.html>`__
+#. `Formalizing 100 theorems in Lean <https://leanprover-community.github.io/100.html>`__
+#. Articles, videos, blog posts, etc. by `Kevin Buzzard <https://www.imperial.ac.uk/people/k.buzzard>`__
+    #. `The Xena Project <https://xenaproject.wordpress.com/>`__
+    #. `The Mechanization of Mathematics`_ 
+    #. `The Future of Mathematics`_
+    #. `Twitch channel <https://www.twitch.tv/kbuzzard>`__. In particular, checkout `this video <https://www.twitch.tv/videos/665779560>`__ about summer projects.
+    #. `Discord server <https://t.co/DSz6mbw4Oc?amp=1>`__ 
 #. `Lean Zulip chat group`_
 
 
