@@ -1,15 +1,10 @@
 import tactic
 import data.nat.basic
 import data.nat.prime
-import data.real.basic
-import data.real.irrational
 
 
 noncomputable theory
 open_locale classical
-
--- have them prove it assuming as much of the technical assumption
-
 
 lemma two_dvd_of_two_dvd_sq {n : ℕ} (hn : 2 ∣ n ^ 2) : 2 ∣ n :=
 begin
@@ -70,11 +65,10 @@ end
 lemma sq_eq_zero_iff_eq_zero (m : ℕ) : m ^ 2 = 0 ↔ m = 0 :=
 begin
   split, 
-    { apply eq_zero_of_sq_eq_zero },
-    intro h, rw h, ring,
+  { apply eq_zero_of_sq_eq_zero },
+  intro h, rw h, ring,
 end
 
--- this lemma needs a better name
 lemma coprime_of_div_gcd 
   (m n m' n' k : ℕ) 
   (hk : k = nat.gcd m n)
@@ -94,7 +88,6 @@ begin
   exact hm,
 end
 
--- i think lemmas in the library usually use 0 < n instead of n ≠ 0.
 
 lemma wlog_nonzero {m n : ℕ} (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : n ≠ 0 :=
 begin
@@ -108,15 +101,12 @@ end
 lemma wlog_gcd (m n : ℕ) (hm : m ≠ 0) (hmn : 2 * m ^ 2 = n ^ 2) : 
 ∃ m' n', nat.coprime m' n' ∧ m' ≠ 0 ∧ 2 * m' ^ 2 = n' ^ 2 :=
 begin
-  -- i don't really know the difference between set and let, 
-  -- but i think set usually works better for me
   set k := m.gcd n,
-  -- simp only [nat.pow_eq_pow] at hmn,
   have hkm : k ∣ m := gcd_div_left m n, 
   have hkn : k ∣ n := gcd_div_right m n, 
   have hn : n ≠ 0 := wlog_nonzero hm hmn,
   have hk : k ≠ 0, 
-    { rw ← nat.pos_iff_ne_zero,
+  { rw ← nat.pos_iff_ne_zero,
     apply nat.gcd_pos_of_pos_left,
     rwa nat.pos_iff_ne_zero },
   cases hkm with m' hkm,
@@ -124,11 +114,11 @@ begin
   use [m', n'],
   split, apply coprime_of_div_gcd m n m' n' k,
   -- this generates a bunch of conditions we'll tackle one at a time
-    { simp },
-    { assumption },
-    { assumption },
-    { rwa nat.pos_iff_ne_zero },
-    { rwa nat.pos_iff_ne_zero },
+  { simp },
+  { assumption },
+  { assumption },
+  { rwa nat.pos_iff_ne_zero },
+  { rwa nat.pos_iff_ne_zero },
   split,
   { rw hkm at hm, contrapose! hm, rw hm, ring },
   contrapose! hmn,
@@ -139,6 +129,8 @@ begin
   rw nat.pos_iff_ne_zero, 
   contrapose! hk,
   apply eq_zero_of_sq_eq_zero, 
+  -- you want to say exact hk, but there's an invisible problem with nat.pow. 
+  -- simp can take care of it.
   revert hk, simp,
 end
 
@@ -155,21 +147,18 @@ begin
   have h2 := wlog_gcd _ _ hm hmn, clear hmn hm m n,
   rcases h2 with ⟨m, n, h , hm, hmn ⟩,
   contrapose h, clear h,
-  have hn := wlog_nonzero hm hmn,
-  have hn2 := two_dvd_of_two_dvd_sq' hmn,
-  have : 1 < 2 := by norm_num,
+  have : 1 < 2, norm_num, -- linarith also works
   apply not_coprime_of_common_factor this,
+  { apply wlog_nonzero hm, assumption, },
   { assumption },
-  { assumption },
-  { assumption },
+  { apply two_dvd_of_two_dvd_sq', exact hmn, },
   apply two_dvd_of_two_dvd_sq'',
   exact hmn,
 end
 
 theorem sqrt2_irrational : 
-¬( ∃ p q : ℕ,
-      p ≠ 0 ∧
-      2 * p^2 = q^2) :=
+¬ ∃ p q : ℕ,
+  p ≠ 0 ∧ 2 * p^2 = q^2 :=
 begin
   push_neg,
   intros, 

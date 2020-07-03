@@ -1,9 +1,11 @@
 import tactic
 import data.int.basic
 
-
-example {p : ℤ → Prop} 
-  (p_succ : ∀ n, p n → p (n + 1)) (p_pred : ∀ n, p n → p (n - 1)) :
+-- I don't think I can do this without coercions
+example 
+  (p : ℤ → Prop)
+  (p_succ : ∀ n, p n → p (n + 1)) 
+  (p_pred : ∀ n, p n → p (n - 1)) :
 (∀ n, p n) ↔ p 0 :=
 begin
   have key1 : ∀ n, p n ↔ p (n+1),
@@ -47,7 +49,7 @@ end
 
 variables {R : Type*} [comm_ring R]
 example (n : ℕ) (a : R) : 
-(1 - a) * ∑ k in range n, a^k = 1 - a ^n :=
+(1 - a) * ∑ k in range n, a ^ k = 1 - a ^ n :=
 begin
   rw mul_sum, apply sum_range_induction,
   { simp },
