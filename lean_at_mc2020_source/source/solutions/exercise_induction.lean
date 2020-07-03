@@ -25,8 +25,6 @@ end
 open_locale big_operators
 open finset
 
-
-
 -- by landing in ℤ, we avoid the perils of nat subtraction
 def f : ℕ → ℕ
 | 0 := 0
