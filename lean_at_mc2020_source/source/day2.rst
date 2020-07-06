@@ -8,6 +8,44 @@ Lean's `mathlib library <https://leanprover-community.github.io/mathlib_docs/>`_
 We will focus on how to *use* these to prove more complicated theorems and later on go deeper into some of the definitions.
 We will almost exclusively focus on theorems about natural numbers.
 
+Currying 
+==============
+
+There is no difference between functions and implications in type theory. 
+And products for arbitrary types behave exactly like "∧" for propositions.
+This is a both bug and a feature.
+
+.. code:: lean 
+  :name: curry_uncurry
+
+  theorem curry (P Q R : Type) (f : P × Q → R) : P → (Q → R) := 
+  begin 
+    sorry,
+  end 
+  
+  theorem uncurry (P Q R : Type) (f : P → (Q → R)) : P × Q → R := 
+  begin 
+    sorry,
+  end
+
+These two theorems together imply that a function ``P × Q → R`` is equivalent to a function ``P → (Q → R)``.
+This is called **currying** (named Haskell Curry).
+Internally, Lean will always curry functions. You will never see a function defined from a product to another type.
+Lean will also drop the brackets so that ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
+
+
+Consider a function ``f : P → Q → R → S`` and elements ``hp : P``, ``hq : Q``, ``hr : R``.
+Then 
+``f(hp)`` is of type ``Q → R → S``, ``((f (hp)) hq)`` is of type ``R → S``, and ``(((f (hp)) hq) hr)`` is of type ``S``.
+This is looking less and less fun.
+Lean allows you to skip the brackets completely. So that 
+``f hp`` is of type ``Q → R → S``, ``f hp hq`` is of type ``R → S``, and ``f hp hq hr`` is of type ``S``.
+
+.. topic:: Brackets in Lean 
+
+  * The type ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
+  * The element ``f hp hq hr`` is the same as ``(((f (hp)) hq) hr)``.
+
 
 Quantifiers 
 ============== 
