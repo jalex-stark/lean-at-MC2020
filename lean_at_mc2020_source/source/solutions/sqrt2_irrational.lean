@@ -78,11 +78,11 @@ lemma coprime_of_div_gcd
   (hn : 0 < n)
 : nat.coprime m' n' :=
 begin
-  unfold nat.coprime,
   have key := nat.gcd_mul_left k m' n',
   rw [← hmk, ← hnk, ← hk] at key,
   symmetry' at key,
-  rwa nat.mul_right_eq_self_iff at key,
+  rw nat.mul_right_eq_self_iff at key, exact key,
+  -- generates side goal 0 < k
   rw hk,
   apply nat.gcd_pos_of_pos_left,
   exact hm,
@@ -98,40 +98,66 @@ begin
   norm_num at hmn, exact hmn,
 end
 
-lemma wlog_gcd (m n : ℕ) (hm : m ≠ 0) (hmn : 2 * m ^ 2 = n ^ 2) : 
-∃ m' n', nat.coprime m' n' ∧ m' ≠ 0 ∧ 2 * m' ^ 2 = n' ^ 2 :=
+lemma gcd_ne_zero {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0) : nat.gcd m n ≠ 0 :=
+begin
+  rw ← nat.pos_iff_ne_zero,
+  apply nat.gcd_pos_of_pos_left,
+  rwa nat.pos_iff_ne_zero, -- omega works
+end
+
+lemma ne_zero_of_mul_ne_zero {m k m' : ℕ}
+  (hm : m ≠ 0)
+  (hkm : m = k * m') :
+  m' ≠ 0 :=
+begin
+  contrapose! hm, 
+  rw hkm,
+  rw hm, ring
+end
+
+lemma wlog_coprime_aux {m n k : ℕ}
+  (hmn : 2 * (k * m) ^ 2 = (k * n) ^ 2)
+  (hk : k ≠ 0) :
+  2 * m ^ 2 = n ^ 2 :=
+begin
+  ring at *,
+  rwa nat.mul_left_inj at hmn,  
+  rw nat.pos_iff_ne_zero,
+  contrapose! hk,
+  apply eq_zero_of_sq_eq_zero, 
+  ring at *,
+  assumption,
+end
+
+lemma wlog_coprime {m n : ℕ} (hm : m ≠ 0) (hmn : 2 * m ^ 2 = n ^ 2) : 
+∃ m' n', m' ≠ 0  ∧  2 * m' ^ 2 = n' ^ 2 ∧ nat.coprime m' n' :=
 begin
   set k := m.gcd n,
+  -- We want to divide by k. To set that up, 
+  -- we prove that k is not zero
+  have hn : n ≠ 0 := wlog_nonzero hm hmn,
+  have hk : k ≠ 0 := gcd_ne_zero hm hn,
+  -- and we prove that k divides m and n
   have hkm : k ∣ m := gcd_div_left m n, 
   have hkn : k ∣ n := gcd_div_right m n, 
-  have hn : n ≠ 0 := wlog_nonzero hm hmn,
-  have hk : k ≠ 0, 
-  { rw ← nat.pos_iff_ne_zero,
-    apply nat.gcd_pos_of_pos_left,
-    rwa nat.pos_iff_ne_zero },
+  -- here we extract the quotients m' and n'
   cases hkm with m' hkm,
   cases hkn with n' hkn,
   use [m', n'],
-  split, apply coprime_of_div_gcd m n m' n' k,
+  split, -- ⊢	m' ≠ 0
+  { apply ne_zero_of_mul_ne_zero hm hkm },
+  split, -- ⊢	2 * m' ^ 2 = n' ^ 2
+  { rw [hkm, hkn] at hmn,
+    apply wlog_coprime_aux hmn,
+    assumption },
+  -- 	⊢	m'.coprime n'
+  apply coprime_of_div_gcd m n m' n' k,
   -- this generates a bunch of conditions we'll tackle one at a time
-  { simp },
-  { assumption },
-  { assumption },
-  { rwa nat.pos_iff_ne_zero },
-  { rwa nat.pos_iff_ne_zero },
-  split,
-  { rw hkm at hm, contrapose! hm, rw hm, ring },
-  contrapose! hmn,
-  rw [hkn, hkm], ring, 
-  rw nat.mul_left_inj, { simpa }, 
-  -- { rwa mul_comm, simp at hmn, simpa, },
-
-  rw nat.pos_iff_ne_zero, 
-  contrapose! hk,
-  apply eq_zero_of_sq_eq_zero, 
-  -- you want to say exact hk, but there's an invisible problem with nat.pow. 
-  -- simp can take care of it.
-  revert hk, simp,
+  { refl }, -- this is true by definition of k
+  { exact hkm },
+  { exact hkn },
+  { rw nat.pos_iff_ne_zero, exact hm },
+  { rw nat.pos_iff_ne_zero, exact hn },
 end
 
 lemma not_coprime_of_common_factor {m n k : ℕ} 
@@ -144,16 +170,17 @@ end
 
 lemma sqrt2_irrational_aux {m n : ℕ} (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : false :=
 begin
-  have h2 := wlog_gcd _ _ hm hmn, clear hmn hm m n,
+  have h2 := wlog_coprime hm hmn, clear hmn hm m n,
   rcases h2 with ⟨m, n, h , hm, hmn ⟩,
   contrapose h, clear h,
   have : 1 < 2, norm_num, -- linarith also works
+  contrapose! hmn,
   apply not_coprime_of_common_factor this,
-  { apply wlog_nonzero hm, assumption, },
+  { apply wlog_nonzero hmn, assumption, },
   { assumption },
-  { apply two_dvd_of_two_dvd_sq', exact hmn, },
+  { apply two_dvd_of_two_dvd_sq', exact hm, },
   apply two_dvd_of_two_dvd_sq'',
-  exact hmn,
+  exact hm,
 end
 
 theorem sqrt2_irrational : 
