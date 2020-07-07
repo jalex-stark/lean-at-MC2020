@@ -1,6 +1,21 @@
 import tactic
 import data.int.basic
 
+
+lemma even_or_odd (n : ℕ) : 
+(∃ k, n = 2 * k) ∨ ∃ k, n = 2 * k + 1 :=
+begin
+  induction n with d hd, 
+  { use 0, simp },
+  -- you should ~always do this rw after opening the successor case of induction on the naturals
+  rw nat.succ_eq_add_one,
+  cases hd with h_even h_odd,
+  { cases h_even with k hk, 
+    right, use k, rw hk },
+  cases h_odd with k hk,
+  left, use k+1, rw hk, ring,
+end
+
 -- I don't think I can do this without coercions
 example 
   (p : ℤ → Prop)
