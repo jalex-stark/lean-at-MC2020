@@ -104,8 +104,8 @@ html_theme_options = {
                         'Lean Live Editor': 'https://leanprover-community.github.io/lean-web-editor/',
                         'Lean Documentation': 'https://leanprover-community.github.io/mathlib_docs/',
                         'Leanprover Community':'https://leanprover-community.github.io/'},
-    'sidebar_width' : '230px',
-    'page_width' : '95%',
+    # 'sidebar_width' : '230px',
+    # 'page_width' : '95%',
     # 'fixed_sidebar' : True
 }
 

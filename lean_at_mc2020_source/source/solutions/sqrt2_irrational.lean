@@ -2,7 +2,6 @@ import tactic
 import data.nat.basic
 import data.nat.prime
 
-
 noncomputable theory
 open_locale classical
 
@@ -50,7 +49,8 @@ end
 -- maynbe the next one is a level and the previous one is provided?
 lemma gcd_div_right (a b : ℕ) : (nat.gcd a b) ∣ b :=
 begin
-  rw nat.gcd_comm, apply gcd_div_left,
+  rw nat.gcd_comm, 
+  apply gcd_div_left,
 end
 
 

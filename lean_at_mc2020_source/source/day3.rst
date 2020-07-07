@@ -1,53 +1,119 @@
 .. _day3:
 
-***************************
-Type classes and instances
-***************************
+***********************
+A Number Theory Puzzle
+***********************
 
 
-Many technical lemmas 
-=====================
+Odds and evens
+---------------
+Here's an example with statements about natural numbers.
+We started the proof by rewriting with something from the library.
+Try finishing the proof with just your logic tools --- you shouldn't need to know how natural numbers are implemented.
 
+.. code:: lean
+   :name: odds_and_evens
 
-.. code-block:: lean
-   :name: two_dvd_of_two_dvd_sq
+    import tactic
+    import data.nat.parity
 
-    lemma two_dvd_of_two_dvd_sq (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
+    lemma even_of_odd_add_odd
+      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
+    nat.even (a + b) :=
     begin
-      intros eq₁,
-      have : 2 ∣ n^2, by { use m^2, exact eq.symm eq₁},
-      exact nat.prime.dvd_of_dvd_pow nat.prime_two ‹2 ∣ n^2 ›,
+      rw nat.even_add,
     end
 
-.. code-block:: lean
-   :name: gcd_div_left
+    import data.nat.prime
+    import data.nat.parity
+    import tactic
 
-    lemma gcd_div_left (a b : ℕ) : (nat.gcd a b) ∣ a :=
+
+
+.. code:: lean
+
+    theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
     begin
-      simp [nat.gcd_eq_right_iff_dvd],
+      intros nnnp p, apply nnnp, 
+      intro np, apply np, 
+      apply p,
     end
 
-.. code-block:: lean
-   :name: gcd_div_right
 
-    lemma gcd_div_right (a b : ℕ) : (nat.gcd a b) ∣ b :=
+    example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
     begin
-      rw nat.gcd_comm, apply gcd_div_left,
+      library_search,
     end
 
-.. code-block:: lean
-   :name: eq_zero_of_sq_eq_zero
+    #check @nat.prime.eq_two_or_odd
 
-    lemma eq_zero_of_sq_eq_zero (m : ℕ) : m^2 = 0 → m = 0 :=
+    lemma eq_two_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
     begin
-      simp [nat.pow_two, nat.mul_eq_zero], 
+      cases nat.prime.eq_two_or_odd hp, {assumption},
+      rw ← nat.not_even_iff at h, contradiction,
     end
 
-.. code-block:: lean
-   :name: sq_eq_zero_iff_eq_zero
 
-  lemma sq_eq_zero_iff_eq_zero (m : ℕ) : m^2 = 0 ↔ m = 0 :=
-  begin
-    split, { apply eq_zero_of_sq_eq_zero },
-    sorry
-  end
+    lemma even_of_odd_add_odd
+      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
+    nat.even (a + b) :=
+    begin
+      rw nat.even_add, tauto,
+    end
+
+    lemma one_lt_of_nontrivial_factor 
+      {b c : ℕ} (hb : b < b * c) :
+    1 < c :=
+    begin
+      contrapose! hb, 
+      interval_cases c,
+    end
+
+    example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
+    begin
+      split,
+      {intros, linarith,},
+      contrapose!,
+      simp,
+    end
+
+    lemma nontrivial_product_of_not_prime
+      {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
+    ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k :=
+    begin
+      have h1 := nat.exists_dvd_of_not_prime2 two_le_k hk,
+      rcases h1 with ⟨a, ⟨b, hb⟩, ha1, ha2⟩,
+      use [a, b], norm_num, 
+      split, assumption,
+      split, rw [hb, lt_mul_iff_one_lt_left], linarith, 
+      cases b, {linarith}, {simp},
+      split, linarith,
+      split, rw hb at ha2, apply one_lt_of_nontrivial_factor ha2,
+      rw hb,
+    end
+
+    -- norm_num, linarith
+    theorem three_fac_of_sum_consecutive_primes 
+      {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
+      (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
+      (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
+    ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
+    begin
+      use 2, have h1 : nat.even (p + q), 
+      { apply even_of_odd_add_odd, 
+        contrapose! p_ne_2, apply eq_two_of_even_prime; assumption, 
+        contrapose! q_ne_2, apply eq_two_of_even_prime; assumption, },
+
+      cases h1 with k hk, 
+      have hk' : ¬ k.prime, 
+      { apply consecutive; linarith },
+
+      have h2k : 2 ≤ k, { have := nat.prime.two_le hp, linarith, },
+      have h2 := nat.exists_dvd_of_not_prime2 _ hk',
+      swap, { exact h2k }, -- for some reason I think it's interesting to have the student remember that they've already proved this
+      rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
+      use [b,c],
+      split, { rw [hk, ← hbc], ring },
+      split, { norm_num },
+      split; assumption,
+    end
