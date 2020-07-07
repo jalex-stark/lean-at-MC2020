@@ -5,7 +5,7 @@ open nat
 
 theorem exists_infinite_primes (n : ℕ) : ∃ p, p ≥ n ∧ prime p :=          
 begin
-  set p:= min_fac (n.fact + 1), use p,
+  set p := min_fac (n.fact + 1), use p,
   have pp : p.prime, 
   { exact min_fac_prime (ne_of_gt (succ_lt_succ (fact_pos n))) },
  

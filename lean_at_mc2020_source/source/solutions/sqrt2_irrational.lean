@@ -5,20 +5,44 @@ import data.nat.prime
 noncomputable theory
 open_locale classical
 
--- have them prove it assuming as much of the technical assumption
-
-lemma two_dvd_of_two_dvd_sq (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
+lemma two_dvd_of_two_dvd_sq {n : ℕ} (hn : 2 ∣ n ^ 2) : 2 ∣ n :=
 begin
-  intros eq₁,
-  have : 2 ∣ n^2, by { use m^2, exact eq.symm eq₁},
-  exact nat.prime.dvd_of_dvd_pow nat.prime_two ‹2 ∣ n^2 ›,
+  apply nat.prime.dvd_of_dvd_pow, 
+  { exact nat.prime_two },
+  exact hn,
 end
+
+lemma two_dvd_of_two_dvd_sq' {m n : ℕ} (hmn : 2 * m ^ 2 = n ^ 2) : 2 ∣ n :=
+begin
+  apply two_dvd_of_two_dvd_sq,
+  use m^2, rw hmn,
+end
+
+example (a b c : ℕ) (hc : 0 < c) (h : c * a = c * b) : a = b :=
+begin
+  -- library_search succeeds here
+  rwa nat.mul_right_inj at h, 
+  assumption,
+end
+
+lemma two_dvd_of_two_dvd_sq'' {m n : ℕ} (hmn : 2 * m ^ 2 = n ^ 2) : 2 ∣ m :=
+begin
+  apply two_dvd_of_two_dvd_sq,
+  have hn := two_dvd_of_two_dvd_sq' hmn,
+  cases hn with k hk,
+  use k^2, 
+  rw hk at hmn, clear hk,
+  have : 0 < 2 := by norm_num,
+  rw ← nat.mul_right_inj this, 
+  ring at hmn, ring, assumption,
+end
+
 
 
 lemma gcd_div_left (a b : ℕ) : (nat.gcd a b) ∣ a :=
 begin
-  refine nat.gcd_eq_right_iff_dvd.mpr _,
-  simp only [nat.gcd_gcd_self_right_left],
+  rw nat.gcd_eq_right_iff_dvd,
+  apply nat.gcd_gcd_self_right_left,
 end
 
 
@@ -31,28 +55,21 @@ end
 
 
 -- i think the following two lemma can be "levels". 
-lemma eq_zero_of_sq_eq_zero (m : ℕ) (hm : m^2 = 0) : m = 0 :=
+lemma eq_zero_of_sq_eq_zero (m : ℕ) (hm : m ^ 2 = 0) : m = 0 :=
 begin
   simp only [nat.pow_two] at hm, 
   simp only [nat.mul_eq_zero, or_self] at hm,
   assumption,
 end
 
-lemma sq_eq_zero_iff_eq_zero (m : ℕ) : m^2 = 0 ↔ m = 0 :=
+lemma sq_eq_zero_iff_eq_zero (m : ℕ) : m ^ 2 = 0 ↔ m = 0 :=
 begin
   split, 
-    {exact eq_zero_of_sq_eq_zero m,},
-    { intro h, 
-      rw h, 
-      ring,}
+  { apply eq_zero_of_sq_eq_zero },
+  intro h, rw h, ring,
 end
 
--- lemma mul_right_eq_self_iff {a b : ℕ} (ha : 0 < a) : a * b = a ↔ b = 1 :=
--- suffices a * b = a * 1 ↔ b = 1, by rwa mul_one at this,
--- nat.mul_right_inj ha
-
--- this lemma needs a better name
-lemma gcd_spec 
+lemma coprime_of_div_gcd 
   (m n m' n' k : ℕ) 
   (hk : k = nat.gcd m n)
   (hmk : m = k * m')
@@ -61,19 +78,18 @@ lemma gcd_spec
   (hn : 0 < n)
 : nat.coprime m' n' :=
 begin
-  unfold nat.coprime,
   have key := nat.gcd_mul_left k m' n',
   rw [← hmk, ← hnk, ← hk] at key,
   symmetry' at key,
-  rwa nat.mul_right_eq_self_iff at key,
+  rw nat.mul_right_eq_self_iff at key, exact key,
+  -- generates side goal 0 < k
   rw hk,
   apply nat.gcd_pos_of_pos_left,
   exact hm,
 end
 
--- i think lemmas in the library usually use 0 < n instead of n ≠ 0.
 
-lemma wlog_nonzero (m n : ℕ) (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : n ≠ 0 :=
+lemma wlog_nonzero {m n : ℕ} (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : n ≠ 0 :=
 begin
   contrapose! hm,
   rw hm at hmn, ring at hmn,
@@ -82,160 +98,99 @@ begin
   norm_num at hmn, exact hmn,
 end
 
-lemma wlog_gcd' (m n : ℕ) (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : 
-∃ m' n', nat.coprime m' n' ∧ m' ≠ 0 ∧ 2 * m'^2 = n'^2 :=
+lemma gcd_ne_zero {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0) : nat.gcd m n ≠ 0 :=
 begin
-  -- i don't really know the difference between set and let, 
-  -- but i think set usually works better for me
+  rw ← nat.pos_iff_ne_zero,
+  apply nat.gcd_pos_of_pos_left,
+  rwa nat.pos_iff_ne_zero, -- omega works
+end
+
+lemma ne_zero_of_mul_ne_zero {m k m' : ℕ}
+  (hm : m ≠ 0)
+  (hkm : m = k * m') :
+  m' ≠ 0 :=
+begin
+  contrapose! hm, 
+  rw hkm,
+  rw hm, ring
+end
+
+lemma wlog_coprime_aux {m n k : ℕ}
+  (hmn : 2 * (k * m) ^ 2 = (k * n) ^ 2)
+  (hk : k ≠ 0) :
+  2 * m ^ 2 = n ^ 2 :=
+begin
+  ring at *,
+  rwa nat.mul_left_inj at hmn,  
+  rw nat.pos_iff_ne_zero,
+  contrapose! hk,
+  apply eq_zero_of_sq_eq_zero, 
+  ring at *,
+  assumption,
+end
+
+lemma wlog_coprime {m n : ℕ} (hm : m ≠ 0) (hmn : 2 * m ^ 2 = n ^ 2) : 
+∃ m' n', m' ≠ 0  ∧  2 * m' ^ 2 = n' ^ 2 ∧ nat.coprime m' n' :=
+begin
   set k := m.gcd n,
+  -- We want to divide by k. To set that up, 
+  -- we prove that k is not zero
+  have hn : n ≠ 0 := wlog_nonzero hm hmn,
+  have hk : k ≠ 0 := gcd_ne_zero hm hn,
+  -- and we prove that k divides m and n
   have hkm : k ∣ m := gcd_div_left m n, 
   have hkn : k ∣ n := gcd_div_right m n, 
-  -- have hn : n ≠ 0 := wlog_nonzero _ _ hm hmn,
-  have hk : k ≠ 0, 
-    { rw ← nat.pos_iff_ne_zero,
-    apply nat.gcd_pos_of_pos_left,
-    rwa nat.pos_iff_ne_zero },
+  -- here we extract the quotients m' and n'
   cases hkm with m' hkm,
   cases hkn with n' hkn,
   use [m', n'],
-  split, apply gcd_spec m n m' n' k,
-    simp,
-    assumption,
-    assumption,
-    rwa nat.pos_iff_ne_zero,
-    rwa nat.pos_iff_ne_zero,
-  split,
-    rw hkm at hm, contrapose! hm, rw hm, ring,
-  rw [hkn, hkm] at hmn, ring_exp at hmn, 
-  rw nat.mul_right_inj at hmn,
-  finish,
-  rw nat.pos_iff_ne_zero, contrapose! hk,
-  rwa ← sq_eq_zero_iff_eq_zero, 
-  -- assumption doesn't work here... yikes!
-  finish,
+  split, -- ⊢	m' ≠ 0
+  { apply ne_zero_of_mul_ne_zero hm hkm },
+  split, -- ⊢	2 * m' ^ 2 = n' ^ 2
+  { rw [hkm, hkn] at hmn,
+    apply wlog_coprime_aux hmn,
+    assumption },
+  -- 	⊢	m'.coprime n'
+  apply coprime_of_div_gcd m n m' n' k,
+  -- this generates a bunch of conditions we'll tackle one at a time
+  { refl }, -- this is true by definition of k
+  { exact hkm },
+  { exact hkn },
+  { rw nat.pos_iff_ne_zero, exact hm },
+  { rw nat.pos_iff_ne_zero, exact hn },
 end
 
-lemma wlog_gcd : --(p q : ℕ) (q_ne_zero : q ≠ 0) (h : nat.coprime p q) (hpq : 2 * q^2 = p^2): 
-¬( ∃ p q : ℕ,
-     q ≠ 0 ∧
-     nat.gcd p q = 1∧ 
-     2 * q^2 = p^2) →
-¬( ∃ p q : ℕ,
-     q ≠ 0 ∧
-     2 * q^2 = p^2):= 
-begin 
-  contrapose!,
-  intros,
-  cases a with p h,
-  cases h with q h, 
-  cases h with q_ne_zero rational_2,
-
-  let k:= nat.gcd p q,
-  have : (∃ p' q' : ℕ, p = k * p' ∧ q = k * q' ∧ nat.coprime p' q'), by sorry, --
-  cases this with p' this, 
-  cases this with q' this, 
-  cases this with hp this,
-  cases this with hq hpq,
-  have q'_ne_zero: q' ≠ 0, by sorry, --
-  have : 2 * q'^2 = p'^2, by sorry, --
-  use [p',q', q'_ne_zero, hpq, this],
-end 
-
-#check nat.le_of_dvd
-theorem sqrt2_irrational_aux (p q : ℕ) (hp : p ≠ 0) : 
-2 * p^2 ≠ q^2 :=
+lemma not_coprime_of_common_factor {m n k : ℕ} 
+  (hk : 1 < k) (hm : m ≠ 0) (hn : n ≠ 0)  (hmk : k ∣ m) (hnk : k ∣ n) :
+¬ nat.coprime n m :=
 begin
-  intro hpq,
-  -- have hq : q ≠ 0, apply wlog_nonzero _ _ hp hpq,
-  have key := wlog_gcd' p q hp hpq,
-  rcases key with ⟨ m , n, hmn' , hm , hmn ⟩ ,
-  clear' hpq hp p q,
-  unfold nat.coprime at hmn',
-  have h2m : 2 ∣ n,
-  apply two_dvd_of_two_dvd_sq, exact hmn,
-  suffices key : 2 ∣ m,
-    { have := nat.dvd_gcd key h2m, 
-    replace this := nat.le_of_dvd _ this; linarith },
-    
-  -- have h2m' := h2m,
-  cases h2m with n' hn',
-  rw hn' at hmn, ring_exp at hmn, norm_num at hmn,
-  have : 2 * n'^2 = m^2 := by linarith,
-  apply two_dvd_of_two_dvd_sq, exact this,
+  -- library_search,
+  exact nat.not_coprime_of_dvd_of_dvd hk hnk hmk,
 end
 
-theorem sqrt2_irrational'' : 
-¬( ∃ p q : ℕ,
-      q ≠ 0 ∧
-      2 * p^2 = q^2) :=
+lemma sqrt2_irrational_aux {m n : ℕ} (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : false :=
+begin
+  have h2 := wlog_coprime hm hmn, clear hmn hm m n,
+  rcases h2 with ⟨m, n, h , hm, hmn ⟩,
+  contrapose h, clear h,
+  have : 1 < 2, norm_num, -- linarith also works
+  contrapose! hmn,
+  apply not_coprime_of_common_factor this,
+  { apply wlog_nonzero hmn, assumption, },
+  { assumption },
+  { apply two_dvd_of_two_dvd_sq', exact hm, },
+  apply two_dvd_of_two_dvd_sq'',
+  exact hm,
+end
+
+theorem sqrt2_irrational : 
+¬ ∃ p q : ℕ,
+  p ≠ 0 ∧ 2 * p^2 = q^2 :=
 begin
   push_neg,
   intros, 
-  by_cases hq : q = 0, 
-    {left, exact hq}, right,
-  exact sqrt2_irrational_aux _ _ hq,
+  by_cases hp : p = 0, 
+  { left, exact hp }, right,
+  by_contra h, push_neg at h,
+  apply sqrt2_irrational_aux hp h,
 end
-
-theorem sqrt2_irrational' : 
-¬( ∃ p q : ℕ,
-      q ≠ 0 ∧
-      2 * q^2 = p^2) :=
-begin
-apply wlog_gcd,
-by_contradiction h,
-
-  cases h with p h, 
-  cases h with q h, 
-  cases h with q_ne_zero h, 
-  cases h with coprime_pq h,
-    
-
-  have eq₂: 2 ∣ p := two_dvd_of_two_dvd_sq q p h,
-
-  have eq₂' := eq₂,
-
-  cases eq₂ with p₁ eq₂,
-
-  rw eq₂ at h,
-
-  have : 0 < 2, by {simp only [nat.succ_pos']},
-  have eq₃: q^2 = 2 * p₁^2,
-    {apply (nat.mul_right_inj this).1, ring at *, assumption},
-
-  have eq₄: 2 * p₁^2 = q^2,
-    by { exact eq.symm eq₃},
-
-  have eq₅: 2 ∣ q,
-    exact two_dvd_of_two_dvd_sq p₁ q eq₄,
-
-  have eq₆: 2 ∣ 1,
-  { suffices : 2 ∣ p.gcd q,
-    rw coprime_pq at this,
-    assumption,
-    exact nat.dvd_gcd eq₂' eq₅},
-
-  rw nat.dvd_one at eq₆,
--- I don't think I want to tell campers to use injections on arithmetic goals
--- that feels like too much of an implementation detail of the natural numbers
-  injections,
-end
-
-
-
--- looks like it is will be a lot of work to move to reals from here, not sure if it is worth the effort
--- the above theorem looks good enough to me
-
--- lemma rat.not_irrational (q : ℚ) : ¬irrational q := λ h, h ⟨q, rfl⟩
--- def irrational (x : ℝ) := x ∉ set.range (coe : ℚ → ℝ)
-
--- lemma real_rat_irrat (r:real) : (∃ q: ℚ , r = q) ∨ irrational r := 
--- begin 
--- sorry,
--- end 
-
--- #check real_rat_irrat (real.sqrt 2) 
-
--- theorem sqrt2_irrational: (irrational (real.sqrt 2)) := 
--- begin 
--- sorry,
--- end
