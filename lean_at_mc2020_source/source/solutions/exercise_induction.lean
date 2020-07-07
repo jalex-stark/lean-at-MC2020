@@ -16,6 +16,30 @@ begin
   exact hn,
 end
 
+-- 
+example : fin 0 ≠ fin 1 :=
+begin
+  have : ∃ b : fin 1, true, 
+  use 0,
+  intro h,
+  rw ← h at this,
+  cases this with k hk,
+  cases k, linarith,
+end
+
+-- when i started i thought this would be a rw puzzle, but it's not
+theorem reflexive_of_symmetric_and_transitive (r : ℕ → ℕ → Prop)
+  (h_symm : symmetric r) (h_trans : transitive r) 
+  (h_connected : ∀ x, ∃ y, r x y) : 
+reflexive r :=
+begin
+  intro x,
+  have hxy := h_connected x,
+  cases hxy with y hy,
+  apply h_trans hy,
+  apply h_symm hy,
+end
+
 
 lemma even_or_odd (n : ℕ) : 
 (∃ k, n = 2 * k) ∨ ∃ k, n = 2 * k + 1 :=

@@ -3,7 +3,7 @@ import data.nat.parity
 import tactic
 
 
-theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
+example (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
 begin
   intros nnnp p, apply nnnp, 
   intro np, apply np, 
@@ -38,6 +38,10 @@ lemma one_lt_of_nontrivial_factor
 begin
   contrapose! hb, 
   interval_cases c,
+  -- ⊢ b * 0 ≤ b
+  simp, 
+  -- ⊢ b * 1 ≤ b
+  simp,
 end
 
 example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
