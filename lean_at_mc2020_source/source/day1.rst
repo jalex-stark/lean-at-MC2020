@@ -18,8 +18,8 @@ You can manipulate types and inhabitants the same way as sets and elements. For 
 .. code::
 
   p : X × Y       -- product, p = (x,y) for some x:X, y:Y
-  q : X ⊕ Y       -- disjoint union, p = x or p = y for some x:X, y:Y
-  f : X → Y       -- function, p(x) = y for x:X and y:Y
+  q : X ⊕ Y       -- disjoint union, q = x or q = y for some x:X, y:Y
+  f : X → Y       -- function, f(x) = y for x:X and y:Y
 
 Why not just use set theory then? Why bother with type theory?
 In type theory you cannot speak of an *element* without a *type*, every element is always an inhabitants of some type.
