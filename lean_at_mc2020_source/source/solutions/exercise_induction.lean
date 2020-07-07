@@ -2,6 +2,21 @@ import tactic
 import data.int.basic
 
 
+-- a rw puzzle?
+example 
+  (p : ℕ → Prop) (n : ℕ) (hn : p n) 
+  (h8 : ∀ n, p n ↔ p (n + 8))
+  (h3 : ∀ n, p (n + 3) ↔ p n) :
+p (n + 1) :=
+begin
+  rw ← h3 at hn,
+  rw ← h3 at hn,
+  rw ← h3 at hn,
+  rw h8,
+  exact hn,
+end
+
+
 lemma even_or_odd (n : ℕ) : 
 (∃ k, n = 2 * k) ∨ ∃ k, n = 2 * k + 1 :=
 begin
