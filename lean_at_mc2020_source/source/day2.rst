@@ -1,164 +1,366 @@
 .. _day2:
 
 ***************************
-Mathematics in Lean
+Logic in Lean - Part 2
 ***************************
 
-Lean's `mathlib library <https://leanprover-community.github.io/mathlib_docs/>`__ contains several standard axioms, definitions, theorems, and proofs from which one can to build more complicated math.
-We will focus on how to *use* these to prove more complicated theorems and later on go deeper into some of the definitions.
-We will almost exclusively focus on theorems about natural numbers.
+Your mission today is to wrap up the remaining bits of logic and move on to doing some "actual math".
+Remember to **always save your work**. 
+You might find the :doc:`Glossary of tactics<../tactics>` page and the :doc:`Pretty symbols<../symbols>` page useful.
 
-Currying 
-==============
+Before we move on to new stuff, let's understand what we did yesterday. 
 
-There is no difference between functions and implications in type theory. 
-And products for arbitrary types behave exactly like "∧" for propositions.
-This is a both bug and a feature.
+Behind the scenes 
+==================
 
-.. code:: lean 
-  :name: curry_uncurry
+**Note on brackets**
 
-  theorem curry (P Q R : Type) (f : P × Q → R) : P → (Q → R) := 
-  begin 
-    sorry,
-  end 
-  
-  theorem uncurry (P Q R : Type) (f : P → (Q → R)) : P × Q → R := 
-  begin 
-    sorry,
+* The function ``P → Q → R → S`` means ``P → (Q → (R → S))``.
+* The expression ``a + b + c + d`` means ``((a + b) + c) + d``.
+* By default, arrows are bracketed on the right and binary operators on the left.
+
+Proof irrelevance 
+-------------------
+It might feel a bit weird to say that a proposition has proofs as its inhabitants. 
+Proofs can get huge and unwieldy and it seems unnecessary to have to remember not just the statement but also its proof.
+This is something we don't normally do in math.
+To hide this complication, in type theory there is an axiom, called *proof irrelevance*, which says that 
+if ``P : Prop`` and ``hp1 hp2 : P`` then ``hp1 = hp2``. 
+Taking our *analogy* with sets further, you can think of a proposition as set which is either empty or contains a single element (false or true).
+In fact, in some forms of type theory (e.g. `homotopy type theory <https://en.wikipedia.org/wiki/Homotopy_type_theory>`__), this is taken as the definition of a proposition.
+This is of course not true for general types. 
+For example, ``0 : ℕ ≠ 1 : ℕ``. 
+
+
+Proofs as functions 
+--------------------
+
+Every time you successfully construct a proof of a theorem say 
+
+.. code:: 
+
+  theorem tautology (P : Prop) : P → P :=
+  begin
+    intro hp,
+    exact hp,
   end
 
-These two theorems together imply that a function ``P × Q → R`` is equivalent to a function ``P → (Q → R)``.
-This is called **currying** (named Haskell Curry).
-Internally, Lean will always curry functions. You will never see a function defined from a product to another type.
-Lean will also drop the brackets so that ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
+Lean constructs a *proof term* ``tautology : ∀ P : Prop, P → P`` 
+(you can see this by typing ``#check tautology``).
+In type theory, the *for all* quantifier, ``∀``, is a generalized function.
+Another way Lean will sometimes describe this is as 
+``tautology : (P : Prop) → (P → P)``.
+So, if ``Q : Prop``, then ``tautology(Q) : Q → Q``.
+
+Note however that ``tautology`` is not exactly a function because the codomain ``P → P`` is not fixed and changes with ``P``.
+In type theory, this is called a `dependent function <https://en.wikipedia.org/wiki/Dependent_type>`__.
+Understanding these is beyond the scope of this class and we will simply pretend that this is just a weird function.
+
+Consider a theorem with multiple hypothesis, say 
+
+.. code::
+
+  theorem hello_world (hp : P) (hq : Q) (hr : R) : S
+
+Once we provide a proof of it, Lean will create a proof term
+``hello_world : (hp:P) → (hq:Q) → (hr:R) → S``.
+So that if we have terms ``hp' : P``, ``hq' : Q``, ``hr' : R``
+then ``hello_world hp' hq' hr'`` (note the convenient lack of brackets) will be a term of type ``S``.
+You can even use ``intro``, ``exact``, ``have``, and ``apply`` tactics with proofs.
 
 
-Consider a function ``f : P → Q → R → S`` and elements ``hp : P``, ``hq : Q``, ``hr : R``.
-Then 
-``f(hp)`` is of type ``Q → R → S``, ``((f (hp)) hq)`` is of type ``R → S``, and ``(((f (hp)) hq) hr)`` is of type ``S``.
-This is looking less and less fun.
-Lean allows you to skip the brackets completely. So that 
-``f hp`` is of type ``Q → R → S``, ``f hp hq`` is of type ``R → S``, and ``f hp hq hr`` is of type ``S``.
+Once constructed, any term can be used in a later proof. For example,
 
-.. topic:: Brackets in Lean 
+.. code:: 
 
-  * The type ``P → Q → R → S`` is the same as ``P → (Q → (R → S)))``.
-  * The element ``f hp hq hr`` is the same as ``(((f (hp)) hq) hr)``.
+  example (P Q : Prop) : (P → Q) → (P → Q) :=
+  begin
+    exact tautology (P → Q),
+  end
 
+This is how Lean simulates mathematics.
+Every time you prove a theorem using tactics a *proof term* gets created. 
+Because of proof irrelevance, Lean forgets the exact content of the proof and 
+only remembers its type.
+All the proof terms can then be used in later proofs.
+All of this falls under the giant umbrella of the `Curry--Howard correspondence <https://en.wikipedia.org/wiki/Curry%E2%80%93Howard_correspondence>`__.
 
-Quantifiers 
-============== 
+We'll now continue our study of the remaining logical operators: *and* (``∧``), 
+*or* (``∨``), 
+*if and only if* (``↔``), 
+*for all* (``∀``),
+*there exists* (``∃``).
 
+And / Or
+===============================
+The operators *and* (``∧``) and *or* (``∨``) are very easy to use in Lean.
+Given a term ``hpq : P ∧ Q``, 
+there are tactics in Lean that let you 
+create terms ``hp : P`` and ``hq : Q``, and vice versa.
+Similarly for ``P ∨ Q``, with a subtle change (see below).
 
-In type theory, a proposition ``(∀ x : X, P x)`` is just a function ``X → Prop`` which sends ``x : X`` to ``P x``.
-The tactics for dealing with ``∀`` are hence exactly ones as for ``→``.
+Note that when multiple goals are open, you are trying to solve the topmost goal.
 
 .. list-table:: 
   :widths: 10 90
   :header-rows: 0
 
   * - ``cases``
-    - If ``hp : (∃ x : X, P x)`` is a hypothesis, then 
-      ``cases hp with x key,`` breaks it into ``x : X`` and ``key : P x``.
+    - ``cases`` is a general tactic that breaks a complicated term into simpler ones.
+
+      If ``hpq`` is a term of type ``P ∧ Q``, then 
+      ``cases hpq with hp hq,`` breaks it into ``hp : P`` and ``hp : Q``.
+
+      If ``hpq`` is a term of type ``P × Q``, then 
+      ``cases hpq with hp hq,`` breaks it into ``hp : P`` and ``hp : Q``. 
+
+      If ``fg`` is a term of type ``P ↔ Q``, then 
+      ``cases fg with f g,`` breaks it into ``f : P → Q`` and ``g : Q → P``.
+
+      If ``hpq`` is a term of type ``P ∨ Q``, then 
+      ``cases hpq with hp hq,`` creates two goals and adds the hypotheses ``hp : P`` and ``hq : Q`` to one each.
+
+  * - ``split``
+    - ``split`` is a general tactic that breaks a complicated goal into simpler ones.
+    
+      If the target of the current goal is ``P ∧ Q``, then 
+      ``split,`` breaks up the goal into two goals with targets ``P`` and ``Q``.
+
+      If the target of the current goal is ``P × Q``, then 
+      ``split,`` breaks up the goal into two goals with targets ``P`` and ``Q``.
+
+      If the target of the current goal is ``P ↔ Q``, then 
+      ``split,`` breaks up the goal into two goals with targets ``P → Q`` and ``Q → P``.
+
+  * - ``left``
+    - If the target of the current goal is ``P ∨ Q``, then 
+      ``left,`` changes the target to ``P``.
+  
+  * - ``right``
+    - If the target of the current goal is ``P ∨ Q``, then 
+      ``right,`` changes the target to ``Q``.
+
+
+.. code:: lean
+  :name: and_or_example
+
+  import tactic
+
+  -- these two statements tell Lean to use the law of excluded middle as necessary
+  noncomputable theory
+  open_locale classical
+
+  --BEGIN--
+
+
+  /--------------------------------------------------------------------------
+
+  ``cases``
+    
+    ``cases`` is a general tactic that breaks up complicated terms.
+    If ``hpq`` is a term of type ``P ∧ Q`` or ``P ∨ Q`` or ``P ↔ Q``, then use 
+    ``cases hpq with hp hq,``.
+
+  ``split``
+    
+    If the target of the current goal is ``P ∧ Q`` or ``P ↔ Q``, then use
+    ``split,``.
+
+  ``left``/``right``
+    
+    If the target of the current goal is ``P ∨ Q``, then use 
+    either ``left,`` or ``right,`` (choose wisely).
+
+  ``exfalso``
+
+    Changes the target of the current goal to ``false``.
+
+  Delete the ``sorry,`` below and replace them with a legitimate proof.
+
+  --------------------------------------------------------------------------/
+
+  example (P Q : Prop) : P ∧ Q → Q ∧ P :=
+  begin
+    sorry,
+  end
+
+  example (P Q : Prop) : P ∨ Q → Q ∨ P :=
+  begin
+    sorry,
+  end
+
+  example (P Q R : Prop) : P ∧ false ↔ false :=
+  begin
+    sorry,
+  end
+
+  theorem principle_of_explosion (P Q : Prop) : P ∧ ¬ P → Q :=
+  begin
+    sorry,
+  end
+
+  --END--
+
+Quantifiers 
+============== 
+As mentioned it the introduction the *for all* quantifier, ``∀``, is a generalization of a function.
+As such the tactics for dealing with ``∀`` are the same as those for ``→``. 
+
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``have``
+    - If ``hp`` is a term of type ``∀ x : X, P x`` and 
+      ``y`` is a term of type ``X`` then 
+      ``have hpy := hp(y)`` creates a hypothesis ``hpy : P y``.
+
+  * - ``intro``
+    - If the target of the current goal is ``∀ x : X, P x``, then 
+      ``intro x,`` creates a hypothesis ``x : X`` and 
+      changes the target to ``P x``.
+
+The *there exists* quantifier, ``∃``, in type theory is very intuitive. 
+If you want to prove a statement ``∃ x : X, P x`` then you need to provide a witness.
+If you have a term ``hp : ∃ x : X, P x`` then from this you can extract a witness.
+
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``cases``
+    - If ``hp`` is a term of type ``∃ x : X, P x``, then 
+      ``cases hp with x key,`` breaks it into 
+      ``x : X`` and ``key : P x``.
 
   * - ``use``
-    - If the target of the current goal is ``⊢ ∃ x : X, P x`` 
-      and ``y : X,`` is a hypothesis, then 
-      ``use y,`` changes the target to ``⊢ P y`` and tries to close the goal.
+    - If the target of the current goal is ``∃ x : X, P x`` 
+      and ``y`` is a term of type ``X``, then 
+      ``use y,`` changes the target to ``P y`` and tries to close the goal.
 
-something here.
+Finally, we now know enough Lean tactics to start doing some fun stuff.
 
-1. **Lounge paradox**
-  
-  There is someone in the lounge such that, if they are playing a game, then everyone in the lounge is playing a game. 
-  (See :doc:`hint <../hint_day1_lounge_paradox1>` ).
+Barber paradox
+------------------------------------  
+Let's disprove the "barber paradox," due to Bertrand Russell. 
+The claim is that in a certain town there is a (male) barber that shaves all the men who do not shave themselves. (Why is this a paradox?)
+Prove that this is a contradiction.
+Here are some :doc:`hints <../hint_1_barber_paradox>` if you get stuck.
 
-  .. code:: lean
-    :name: lounge_paradox
+.. code-block:: lean
 
-      import tactic
-      -- the next two lines let us use the by_cases tactic without trouble
-      noncomputable theory
-      open_locale classical
+  import tactic
+  -- the next two lines let us use the by_cases tactic without trouble
+  noncomputable theory
+  open_locale classical
 
-      --BEGIN--
-      theorem lounge 
-        (camper : Type) 
-        (playing : camper → Prop) 
-        (alice : camper) -- making sure that there is at least one camper in the lounge
-        : ∃ x, (playing x → ∀ y, playing y) :=
-      begin
-        by_cases h : ∃ bob, ¬ playing bob,
-        cases h with bob,
-        use bob,
+  --BEGIN--
 
-        push_neg at h,
-        use alice,
-        intro ,
-        exact h,
-      end
-      --END--
+  /--------------------------------------------------------------------------
 
-2. **Barber paradox**
-  
+  ``by_cases``
 
-  Consider the "barber paradox," that is, the claim that in a certain town there is a (male) barber that shaves all and only the men who do not shave themselves. Prove that this is a contradiction:
+    If ``P`` is a proposition, then ``by_cases P,`` creates two goals,
+      the first with a hypothesis ``hp: P`` and
+      second with a hypothesis ``hp: ¬ P``.
 
-  .. code-block:: lean
+  Delete the ``sorry,`` below and replace them with a legitimate proof.
 
-    import tactic
-    -- the next two lines let us use the by_cases tactic without trouble
-    noncomputable theory
-    open_locale classical
+  --------------------------------------------------------------------------/
 
-    --BEGIN--
-    variables (men : Type) (barber : men) 
-    variable  (shaves : men → men → Prop)
+  -- men is type. 
+  -- x : men means x is a man in the town
+  -- shaves x y is inhabited if x shaves y
 
-    example (h : ∀ x : men, shaves barber x ↔ ¬ shaves x x) : 
-      false := 
-      begin 
+  variables (men : Type) (barber : men) 
+  variable  (shaves : men → men → Prop)
 
-      end 
-    --END--
-
-
-3.  **Surjective functions** 
-
-  .. code:: lean 
-
-    import tactic 
-    open function
-
-    -- In the remaining of this file, f and g will denote functions from
-    -- ℕ to ℕ.
-    variables (f g : ℕ → ℕ)
-
-    /-
-    surjective (f : X → Y) := ∀ y, ∃ x, f x = y
-    -/
-
-    example (h : surjective (g ∘ f)) : surjective g :=
-    begin
+  example : ¬ (∀ x : men, shaves barber x ↔ ¬ shaves x x) := 
+    begin 
       sorry,
-    end
+    end 
+  --END--
 
-    example (hf : surjective f) (hg : surjective g) : surjective (g ∘ f) :=
-    begin
-      sorry,
-    end
 
+The math campers singing paradox 
+------------------------------------
   
+Assume that the main lounge is non-empty.
+At a fixed moment in time, there is someone in the lounge such that, 
+if they are singing, 
+then everyone in the lounge is singing. 
+(See :doc:`hints <../hint_1_mcsp>`).
 
+.. code:: lean
+  :name: lounge_paradox
+
+  import tactic
+  -- the next two lines let us use the by_cases tactic without trouble
+  noncomputable theory
+  open_locale classical
+
+  --BEGIN--
+
+  /--------------------------------------------------------------------------
+
+  ``by_cases``
+
+    If ``P`` is a proposition, then ``by_cases P,`` creates two goals, 
+      the first with a hypothesis ``hp: P`` and 
+      second with a hypothesis ``hp: ¬ P``.
+
+  Delete the ``sorry,`` below and replace them with a legitimate proof.
+
+  --------------------------------------------------------------------------/
+
+  -- camper is a type. 
+  -- If x : camper then x is a camper in the main lounge.
+  -- singing(x) is inhabited if x is singing 
+
+  theorem math_campers_singing_paradox  
+    (camper : Type) 
+    (singing : camper → Prop) 
+    (alice : camper) -- making sure that there is at least one camper in the lounge
+    : ∃ x : camper, (singing x → (∀ y : camper, singing y)) :=
+  begin
+    sorry,
+  end
+  --END--
+
+Relationship conundrum
+-----------------------
+A relation ``r`` on a type ``X`` is a map ``r : X → X → Prop``.
+We say that ``x`` is *related* to ``y`` if ``r x y`` is inhabited.
+
+* ``r`` is reflexive if ``x`` is related to itself.
+* ``r`` is symmetric if ``x`` is related to ``y`` implies ``y`` is related to ``x``.
+* ``r`` is transitive if ``x`` is related to ``y`` and ``y`` is related to ``x`` implies ``z`` is related to ``z``.
+* ``r`` is connected if for all ``x`` there is a ``y`` such that ``x`` is related to ``y``.
+
+In the following problem, show that if a relation is symmetric, transitive, and connected,
+then it is also reflexive.
+
+.. code:: lean
+
+  import tactic 
+  
+  variable X : Type 
+
+  theorem reflexive_of_symmetric_transitive_and_connected
+    (r : X → X → Prop)
+    (h_symm : ∀ x y : X, r x y → r y x) 
+    (h_trans : ∀ x y z : X, r x y → r y z → r x z) 
+    (h_connected : ∀ x, ∃ y, r x y) 
+  : (∀ x : X, r x x) :=
+  begin
+    sorry,
+  end
 
 
 
 Proving "trivial" statements 
 =============================
-
-
-In mathlib, divisibility for natural numbers is defined as a *proposition* follows.
+In mathlib, divisibility for natural numbers is defined as the following *proposition*.
 
 .. code:: 
 
@@ -178,11 +380,11 @@ Similarly, the mathlib library also contains the following definition of ``prime
       ∧                                           -- and 
       ∀ (m : ℕ), m ∣ p → m = 1 ∨ m = p            -- if m divides p, then m = 1 or m = p.
 
-This time ``nat.prime`` itself is not a proposition but for every natural number ``n``, 
-``nat.prime n`` is a *proposition*. 
-So that ``nat.prime 2`` requires a proof.
-Fortunately, there are pre-made tactics in Lean for providing such trivial proofs.
-
+For every natural number ``n``, 
+``nat.prime n`` is a *proposition*.
+So that ``nat.prime 101`` requires a proof.
+It is possible to go down the rabbit hole and prove it using just the axioms of natural numbers.
+Fortunately, there are tactics in Lean for providing such trivial proofs such as these.
 
 .. list-table:: 
   :widths: 10 90
@@ -195,7 +397,7 @@ Fortunately, there are pre-made tactics in Lean for providing such trivial proof
       If ``hp : P`` is an assumption then ``norm_num at hp,`` tries to use simplify ``hp`` using basic arithmetic operations.
 
   * - ``ring`` 
-    - ``ring,`` is the symbolic manipulator of Lean. 
+    - ``ring,`` is Lean's symbolic manipulator. 
       If the target has a proof that involves *only* algebraic operations, 
       then ``ring,`` will close the goal.
 
@@ -206,20 +408,35 @@ Fortunately, there are pre-made tactics in Lean for providing such trivial proof
   
   * - ``simp`` 
     - ``simp,`` is a very complex tactic that tries to use theorems from the mathlib library to close the goal. 
-      You should only ever use ``simp,`` to close a goal because its behavior changes as more theorems get added to the library.
+      You should only ever use ``simp,`` to *close a goal* because its behavior changes as more theorems get added to the library.
 
 .. code:: lean 
 
   import tactic data.nat.prime 
 
-  /-
-  norm_num,
-  ring,
-  linarith,
-  simp,
-  -/
+  /--------------------------------------------------------------------------
 
-  example (m n : ℕ) : 1 > 0 :=
+  ``norm_num``
+
+    Useful for arithmetic.
+  
+  ``ring``
+
+    Useful for basic algebra.
+
+  ``linarith``
+
+    Useful for inequalities.
+  
+  ``simp``
+
+    Complex simplifier. Use only to close goals.
+
+  Delete the ``sorry,`` below and replace them with a legitimate proof.
+
+  --------------------------------------------------------------------------/
+  
+  example : 1 > 0 :=
   begin
     sorry,
   end
@@ -241,171 +458,25 @@ Fortunately, there are pre-made tactics in Lean for providing such trivial proof
     sorry,
   end
 
-  -- recall that a ∣ b := (∃ k : ℕ, a = b * k)
+  -- you will need the definition 
+  -- a ∣ b := (∃ k : ℕ, a = b * k)
   example (m a b : ℕ) :  m + a ∣ m^2 + (a + b) * m + a * b :=
   begin
     sorry,
   end
 
-  example (p : ℕ) : nat.prime p → ¬ (p = 1) :=
+  -- try ``unfold nat.prime at hp,`` to get started
+  example (p : ℕ) (hp : nat.prime p) : ¬ (p = 1) :=
   begin 
     sorry,
   end 
 
-
-Rewriting 
-===========
-The final two tactics we need before we can start doing some interesting math is ``rw,`` (for rewrite). 
-
-.. list-table:: 
-  :widths: 10 90
-  :header-rows: 0
-
-  * - ``rw``
-    - If ``f : P = Q`` (or ``f : P ↔ Q``) is a hypothesis, then 
-
-        ``rw f,`` searches for ``P`` in the target and replaces the first instance it finds with ``Q``.
-
-        ``rw ←f,`` searches for ``Q`` in the target and replaces the first instance it finds with ``P``.
-      
-      If ``hr : R`` is another hypothesis, then 
-
-        ``rw f at hr,`` searches for ``P`` in the ``R`` and replaces the first instance it finds with ``Q``.
-
-        ``rw ←f at hr,`` searches for ``Q`` in the ``R`` and replaces the first instance it finds with ``P``.
-
-      Mathematically, this is saying because ``P = Q``, we can replace ``P`` with ``Q`` (or the other way around).
-
-.. code:: lean 
-
-  import tactic data.nat.basic 
-
-  #check nat.add_comm 
-
-  example (a b : ℕ) (f : ℕ → ℕ) : f(a + b) = f(b + a) :=
-  begin 
-    rw nat.add_comm,
-  end 
-
-  example (a b c : ℕ) (f : ℕ → ℕ) :  c + f(a + b) = f(b + a) + c :=
-  begin 
-    rw nat.add_comm a b,
-  end  
-
-.. In the following exercises, we will use the following two lemmas:
-..   mul_assoc a b c : a * b * c = a * (b * c)
-..   mul_comm a b : a*b = b*a
-.. Hence the command 
-..   rw mul_assoc a b c,
-.. will replace a*b*c by a*(b*c) in the current goal.
-.. In order to replace backward, we use
-..   rw ← mul_assoc a b c,
-.. replacing a*(b*c) by a*b*c in the current goal.
-.. Of course we don't want to constantly invoke those lemmas, and we will eventually introduce
-.. more powerful solutions.
-.. -/
-
-.. example (a b c : ℝ) : (a * b) * c = b * (a * c) :=
-.. begin
-..   rw mul_comm a b,
-..   rw mul_assoc b a c,
-.. end
-
-.. -- 0001
-.. example (a b c : ℝ) : (c * b) * a = b * (a * c) :=
-.. begin
-..   sorry
-.. end
-
-.. -- 0002
-.. example (a b c : ℝ) : a * (b * c) = b * (a * c) :=
-.. begin
-..   sorry
-.. end
-
-.. /-
-.. Now let's return to the preceding example to experiment with what happens
-.. if we don't give arguments to mul_assoc or mul_comm.
-.. For instance, you can start the next proof with
-..   rw ← mul_assoc,
-.. Try to figure out what happens.
-.. -/
-
-.. -- 0003
-.. example (a b c : ℝ) : a * (b * c) = b * (a * c) :=
-.. begin
-..   sorry
-.. end
-
-.. /-
-.. We can also perform rewriting in an assumption of the local context, using for instance
-..   rw mul_comm a b at hyp,
-.. in order to replace a*b by b*a in assumption hyp.
-.. The next example will use a third lemma:
-..   two_mul a : 2*a = a + a
-.. Also we use the `exact` tactic, which allows to provide a direct proof term.
-.. -/
-
-.. example (a b c d : ℝ) (hyp : c = d*a + b) (hyp' : b = a*d) : c = 2*a*d :=
-.. begin
-..   rw hyp' at hyp,
-..   rw mul_comm d a at hyp,
-..   rw ← two_mul (a*d) at hyp,
-..   rw ← mul_assoc 2 a d at hyp,
-..   exact hyp, -- Our assumption hyp is now exactly what we have to prove
-.. end
-
-.. /-
-.. And the next one can use:
-..   sub_self x : x - x = 0
-.. -/
-
-.. -- 0004
-.. example (a b c d : ℝ) (hyp : c = b*a - d) (hyp' : d = a*b) : c = 0 :=
-.. begin
-..   sorry
-.. end
-
-Mathematical Induction 
-========================
-
-
-.. list-table:: 
-  :widths: 10 90
-  :header-rows: 0
-
-  * - ``induction``
-    - If ``n : ℕ`` is a hypothesis and the target of the current goal is a proposition 
-      ``⊢ P(n)`` that depends on ``n``,  
-      then ``induction n with d hd,`` removes the hypothesis ``n : ℕ`` produces breaks down the current goal into two goals:
-      
-      * the first with target ``⊢ P(0)`` 
-      * the second with two added hypotheses ``d : ℕ`` and ``hd : P(d)`` and target ``⊢ P(d.succ)``.
-
-      This is precisely the statement of mathematical induction. 
-
-
-.. code:: lean 
-
-  def f : ℕ → ℕ
-  | 0 := 0
-  | (n + 1) := n + 1 + f n
-
-  example : f 1 = 1 := 
+  -- if none of the simplifiers work, try doing ``contrapose!``
+  -- sometimes the simplifiers need a little help
+  example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
   begin
-    unfold f,
+    sorry,
   end
 
-  example (n : ℕ) : 2 * f n = n * (n + 1) :=
-  begin
-    induction n with d hd,  
-    -- base case
-    { unfold f, simp },
-    rw nat.succ_eq_add_one,
-    unfold f, ring, 
-    rw hd, ring,
-  end
 
-.. todo:: 
 
-  Add a few fun problems on induction.

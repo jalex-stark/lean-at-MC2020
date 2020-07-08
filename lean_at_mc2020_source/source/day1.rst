@@ -1,14 +1,15 @@
 .. _day1:
 
 ************************
-Logic in Lean
+Logic in Lean - Part 1
 ************************
 
 Today's mission, should you choose to accept it, is to understand the philosophy of type theory (in Lean).
 Don't try to memorize anything, that will happen automatically. 
 Instead, try to r̶e̶a̶l̶i̶z̶e̶ ̶t̶h̶a̶t̶ ̶t̶h̶e̶r̶e̶ ̶i̶s̶ ̶n̶o̶ ̶s̶p̶o̶o̶n̶ do as many exercises as you can. 
 Practice is the only way to learn a new programming language.
-And **always save your work**. You never know when you'll need it again.
+And **always save your work**. 
+The easiest way to do this is by bookmarking the Lean window in your web browser.
 
 Lean is built on top of a logic system called *type theory*, which is an alternative to *set theory*.
 In type theory, instead of elements we have *terms and* every term has a *type*.
@@ -48,7 +49,7 @@ Hence, in type theory we use ``→`` to denote implication.
 Negation 
 ----------
 In type theory, there is a special proposition ``false : Prop`` which has no proof (hence is *empty*).
-The negative of a proposition ``¬ P`` is just a function ``f : P → false``.
+The negation of a proposition ``¬ P`` is the implication ``P → false``.
 Such a function exists if and only if ``P`` itself is empty (`empty function <https://en.wikipedia.org/wiki/Function_(mathematics)#empty_function>`_), hence ``P → false`` is inhabited if and only if ``P`` is empty which justifies using it as the definition of ``¬ P``.
 
 
@@ -195,7 +196,7 @@ The next two tactics are ``have`` and ``apply``.
 
 Often these two tactics can be used interchangeably. 
 Think of ``have`` as reasoning forward and ``apply`` as reasoning backward.
-When writing a big proof, you often want to use  
+When writing a big proof, you often want to use a combination of the two that makes the proof readable.
 
 .. code:: lean 
   :name: have_apply_examples 
@@ -241,11 +242,20 @@ Here are some :doc:`hints <../hint_1_negation_exercises>` if you get stuck.
 
 .. code:: lean
 
+  /--------------------------------------------------------------------------
+
+  Recall that 
+    ``¬ P`` is ``P → false``,
+    ``¬ (¬ P)`` is ``(P → false) → false``, and so on.
+
+  Delete the ``sorry,`` below and replace them with a legitimate proof.
+
+  --------------------------------------------------------------------------/
+
   theorem self_imp_not_not_self (P : Prop) : P → ¬ (¬ P) :=
   begin
     sorry,
   end
-
 
   theorem contrapositive (P Q : Prop) : (P → Q) → (¬Q → ¬P) :=
   begin
@@ -262,10 +272,19 @@ Here are some :doc:`hints <../hint_1_negation_exercises>` if you get stuck.
 
 Proof by contradiction
 ========================
-As it turns out, the converses of three above theorems cannot be proven using just ``exact``, ``intro``, ``have``, and ``apply``.
-Give it a try.
+You can prove exactly one of the converses of the above three using just ``exact``, ``intro``, ``have``, and ``apply``.
+Can you find which one?
 
 .. code:: lean
+
+  /--------------------------------------------------------------------------
+
+  You can prove exactly one of the following three using just 
+  ``exact``, ``intro``, ``have``, and ``apply``.
+  
+  Can you find which one?
+
+  --------------------------------------------------------------------------/
 
   theorem not_not_self_imp_self (P : Prop) : ¬ ¬ P → P:=
   begin
@@ -335,8 +354,8 @@ Lean provides us the following tactics to use it.
 
 Even though the list is long, these tactics are almost all *obvious*.
 The only two slightly unusual tactics are ``exfalso`` and ``by_cases``.
-You'll see these two in action later. 
-For the following exercises, you only require ``push_neg`` and ``contrapose!``.
+You'll see ``by_cases`` in action later. 
+For the following exercises, you only require ``exfalso``, ``push_neg``, and ``contrapose!``.
 
 .. code:: lean
 
@@ -351,6 +370,10 @@ For the following exercises, you only require ``push_neg`` and ``contrapose!``.
 
 
   /--------------------------------------------------------------------------
+
+  ``exfalso``
+
+    Changes the target of the current goal to ``false``.
 
   ``push_neg``
     
@@ -389,150 +412,35 @@ For the following exercises, you only require ``push_neg`` and ``contrapose!``.
     sorry,
   end
 
-  --END--
-
-
-Logical Operators
-===================
-We have already seen two logical operators, ``→`` and ``¬``, in action.
-The other operators we'll see today are 
-*and* (``∧``), 
-*or* (``∨``), and 
-*if and only if* (``↔``).
-
-.. list-table:: 
-  :widths: 10 90
-  :header-rows: 0
-
-  * - ``cases``
-    - ``cases`` is a general tactic that breaks a complicated term into simpler ones.
-
-      If ``hpq`` is a term of type ``P ∧ Q``, then 
-      ``cases hpq with hp hq,`` breaks it into ``hp : P`` and ``hp : Q``.
-
-      If ``hpq`` is a term of type ``P × Q``, then 
-      ``cases hpq with hp hq,`` breaks it into ``hp : P`` and ``hp : Q``. 
-
-      If ``hpq`` is a term of type ``P ↔ Q``, then 
-      ``cases fg with f g,`` breaks it into ``f : P → Q`` and ``g : Q → P``.
-
-      If ``hpq`` is a term of type ``P ∨ Q``, then 
-      ``cases hpq with hp hq,`` creates two goals and adds the hypotheses ``hp : P`` and ``hq : Q`` to one each.
-
-  * - ``split``
-    - If the target of the current goal is ``P ∧ Q``, then 
-      ``split,`` breaks up the goal into two goals with targets ``P`` and ``Q``.
-
-      If the target of the current goal is ``P × Q``, then 
-      ``split,`` breaks up the goal into two goals with targets ``P`` and ``Q``.
-
-      If the target of the current goal is ``P ↔ Q``, then 
-      ``split,`` breaks up the goal into two goals with targets ``P → Q`` and ``Q → P``.
-
-  * - ``left``
-    - If the target of the current goal is ``P ∨ Q``, then 
-      ``left,`` changes the target to ``P``.
-  
-  * - ``right``
-    - If the target of the current goal is ``P ∨ Q``, then 
-      ``right,`` changes the target to ``Q``.
-
-
-.. code:: lean
-  :name: and_or_example
-
-  import tactic
-
-  -- these two statements tell Lean to use the law of excluded middle as necessary
-  noncomputable theory
-  open_locale classical
-
-  --BEGIN--
-
-
-  /--------------------------------------------------------------------------
-
-  ``cases``
-    
-    ``cases`` is a general tactic that breaks a complicated term into simpler ones.
-    If ``hpq`` is a term of type ``P ∧ Q`` or ``P ∨ Q``, then use 
-    ``cases hpq with hp hq,``
-
-  ``split``
-    
-    If the target of the current goal is ``P ∧ Q`` or ``P ↔ Q``, then use
-      ``split,``
-
-  ``left``/``right``
-    
-    If the target of the current goal is ``P ∨ Q``, then use 
-    either ``left,`` or ``right,``
-  
-  ``exfalso``
-    
-    Changes the target of the current goal to ``false``.
-
-
-  Delete the ``sorry,`` below and replace them with a legitimate proof.
-
-  --------------------------------------------------------------------------/
-
-
-  example (P Q : Prop) : P ∧ ¬ P → Q :=
-  begin
-    sorry,
-  end
-
-  example (P Q : Prop) : P ∧ Q → Q ∧ P :=
-  begin
-    sorry,
-  end
-
-  example (P Q : Prop) : P ∧ Q → Q ∧ P :=
-  begin
-    sorry,
-  end
-
-  example (P Q : Prop) : P ∧ Q → P ∨ Q :=
-  begin
-    sorry,
-  end
-
-  example (P Q R : Prop) : P ∧ false ↔ false :=
-  begin
-    sorry,
-  end
-
-  example (P : Prop) : P ∨ false ↔ P :=
+  theorem principle_of_explosion (P Q : Prop) : P → (¬ P → Q) :=
   begin
     sorry,
   end
 
   --END--
+
 
 Final Remarks
 ===============
-If you need more practice, try to solve as many problems as you can from `here <https://leanprover.github.io/theorem_proving_in_lean/propositions_and_proofs.html#exercises>`__.
 
 You might be wondering, if type theory is so cool why have I not heard of it before?
 
 Many programming languages highly depend on type theory (that's where the term ``datatype`` comes from). 
-Once you define a term ``x : ℕ``, a computer can immediate check that all the manipulations you do with ``x`` 
+Once you define a term ``x : ℕ``, a computer can immediately check that all the manipulations you do with ``x`` 
 are valid manipulations of natural numbers (so you don't accidentally divide by 0 [#f1]_ , for example).
 
 Unfortunately, this also means that the term ``1 : ℕ`` is different from the term ``1 : ℤ``.
-In Lean, if you do ``(1 : ℕ - 2 : ℕ)`` you get ``0 : ℕ`` but if you do ``(1 : ℤ - 2 : ℤ)`` in ``int`` you get ``-1 : ℤ``,
+In Lean, if you do ``(1 : ℕ - 2 : ℕ)`` you get ``0 : ℕ`` but if you do ``(1 : ℤ - 2 : ℤ)`` you get ``-1 : ℤ``,
 that's because natural numbers and subtraction are not buddies.
 Similar problems arise with division.
 This is not the end of the world though. 
 You can *coerce* ``1 : ℕ`` to ``1 : ℤ`` if you want subtraction to work properly, 
 or ``1 : ℕ`` to ``1 : ℚ`` if you want division to work properly.
 
-This coercion requires some initial effort to setup and drives most mathematicians away from type theory.
-Fortunately for us, the `Lean math library <https://leanprover-community.github.io/mathlib_docs/>`__ 
-takes care of all of these *trivial* issues :)
-Hopefully, one day the mathlib library will grow so big that there won't be any difference between *math done by hand* and *math done in Lean* (or any other theorem prover for that matter).
+This, and a few other such things, is what drives most mathematicians away from type theory.
+But these things are only difficult when you're first learning them.
+With practice, type theory becomes second nature, the same as set theory.
 
-.. rubric:: Footnotes
+.. rubric:: 
 
 .. [#f1] Except under staff supervision.

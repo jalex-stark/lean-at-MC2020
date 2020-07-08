@@ -94,7 +94,7 @@ Proof by contradiction
       Mathematically, this is replacing the target by its contrapositive.
 
 
-Logical Operators
+And / Or
 ===================
 
 .. list-table:: 
@@ -110,14 +110,16 @@ Logical Operators
       If ``hpq`` is a term of type ``P × Q``, then 
       ``cases hpq with hp hq,`` breaks it into ``hp : P`` and ``hp : Q``. 
 
-      If ``hpq`` is a term of type ``P ↔ Q``, then 
+      If ``fg`` is a term of type ``P ↔ Q``, then 
       ``cases fg with f g,`` breaks it into ``f : P → Q`` and ``g : Q → P``.
 
       If ``hpq`` is a term of type ``P ∨ Q``, then 
       ``cases hpq with hp hq,`` creates two goals and adds the hypotheses ``hp : P`` and ``hq : Q`` to one each.
 
   * - ``split``
-    - If the target of the current goal is ``P ∧ Q``, then 
+    - ``split`` is a general tactic that breaks a complicated goal into simpler ones.
+    
+      If the target of the current goal is ``P ∧ Q``, then 
       ``split,`` breaks up the goal into two goals with targets ``P`` and ``Q``.
 
       If the target of the current goal is ``P × Q``, then 
@@ -133,3 +135,61 @@ Logical Operators
   * - ``right``
     - If the target of the current goal is ``P ∨ Q``, then 
       ``right,`` changes the target to ``Q``.
+
+Quantifiers 
+============== 
+
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``have``
+    - If ``hp`` is a term of type ``∀ x : X, P x`` and 
+      ``y`` is a term of type ``y`` then 
+      ``have hpy := hp(y)`` creates a hypothesis ``hpy : P y``.
+
+  * - ``intro``
+    - If the target of the current goal is ``∀ x : X, P x``, then 
+      ``intro x,`` creates a hypothesis ``x : X`` and 
+      changes the target to ``P x``.
+
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``cases``
+    - If ``hp`` is a term of type ``∃ x : X, P x``, then 
+      ``cases hp with x key,`` breaks it into 
+      ``x : X`` and ``key : P x``.
+
+  * - ``use``
+    - If the target of the current goal is ``∃ x : X, P x`` 
+      and ``y`` is a term of type ``X``, then 
+      ``use y,`` changes the target to ``P y`` and tries to close the goal.
+
+Proving "trivial" statements 
+=============================
+
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``norm_num``
+    - ``norm_num`` is Lean’s calculator. If the target has a proof that involves *only* numbers and arithmetic operations,
+      then ``norm_num`` will close this goal.
+
+      If ``hp : P`` is an assumption then ``norm_num at hp,`` tries to use simplify ``hp`` using basic arithmetic operations.
+
+  * - ``ring`` 
+    - ``ring,`` is Lean's symbolic manipulator. 
+      If the target has a proof that involves *only* algebraic operations, 
+      then ``ring,`` will close the goal.
+
+      If ``hp : P`` is an assumption then ``ring at hp,`` tries to use simplify ``hp`` using basic algebraic operations.
+
+  * - ``linarith`` 
+    - ``linarith,`` is Lean's inequality solver.
+  
+  * - ``simp`` 
+    - ``simp,`` is a very complex tactic that tries to use theorems from the mathlib library to close the goal. 
+      You should only ever use ``simp,`` to *close a goal* because its behavior changes as more theorems get added to the library.
