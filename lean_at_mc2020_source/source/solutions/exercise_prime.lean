@@ -36,14 +36,16 @@ lemma one_lt_of_nontrivial_factor
   {b c : ℕ} (hb : b < b * c) :
 1 < c :=
 begin
+  
+  rw ← mul_one b at hb,
   contrapose! hb, 
+  suggest,
   interval_cases c,
   -- ⊢ b * 0 ≤ b
   simp, 
   -- ⊢ b * 1 ≤ b
   simp,
 end
-
 example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
 begin
   split,

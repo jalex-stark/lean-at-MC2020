@@ -78,9 +78,6 @@ begin
   rw key1, simpa,
 end
 
-open_locale big_operators
-open finset
-
 -- by landing in ℤ, we avoid the perils of nat subtraction
 def f : ℕ → ℕ
 | 0 := 0
@@ -101,7 +98,10 @@ begin
   rw hd, ring,
 end
 
+open_locale big_operators
+open finset
 variables {R : Type*} [comm_ring R]
+
 example (n : ℕ) (a : R) : 
 (1 - a) * ∑ k in range n, a ^ k = 1 - a ^ n :=
 begin
