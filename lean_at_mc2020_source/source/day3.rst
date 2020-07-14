@@ -4,116 +4,281 @@
 A Number Theory Puzzle
 ***********************
 
+Today we will start using Lean's `mathlib library <https://leanprover-community.github.io/mathlib_docs/>`__ to prove theorems about natural numbers.
+Our focus will be on how to *use* these to prove more complicated theorems.
+Remember to always **save your work**.
 
-Odds and evens
----------------
-Here's an example with statements about natural numbers.
-We started the proof by rewriting with something from the library.
-Try finishing the proof with just your logic tools --- you shouldn't need to know how natural numbers are implemented.
+Today, we'll prove that there are infinitely primes. 
 
-.. code:: lean
-   :name: odds_and_evens
+Equality 
+===========
+So far we have not seen how to deal with propositions of the form ``P = Q``, for example, ``1 + 2 + ... + n = n(n + 1)/2``. Proving these propositions by hand requires a bit of technical knowledge. 
+The standard trick is to make the LHS (almost) equal or to the RHS and then use one of the simplifiers (``norm_num``, ``ring``, ``linarith``, or ``simp``) to close the goal. *Using* equalities on the other hand is very easy. The rewrite tactic (usually shortened to ``rw``) let's you replace the left hand side of an equality with the right hand side.
 
-    import tactic
-    import data.nat.parity
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
 
-    lemma even_of_odd_add_odd
-      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
-    nat.even (a + b) :=
-    begin
-      rw nat.even_add,
-    end
+  * - ``rw``
+    - If ``f`` is a term of type ``P = Q`` (or ``P ↔ Q``), then 
 
-    import data.nat.prime
-    import data.nat.parity
-    import tactic
+        ``rw f,`` searches for ``P`` in the target and replaces it with ``Q``.
+
+        ``rw ←f,`` searches for ``Q`` in the target and replaces it finds with ``P``.
+      
+      If additionally, ``hr : R`` is a hypothesis, then 
+
+        ``rw f at hr,`` searches for ``P`` in the expression ``R`` and replaces it finds with ``Q``.
+
+        ``rw ←f at hr,`` searches for ``Q`` in the expression ``R`` and replaces it finds with ``P``.
+
+      Mathematically, this is saying because ``P = Q``, we can replace ``P`` with ``Q`` (or the other way around).
+
+To get the left arrow, type ``\l`` followed by tab. 
+
+.. code:: lean 
+
+  import tactic data.nat.basic
+
+  /--------------------------------------------------------------------------
+
+    ``rw``
+      
+      If ``f`` is a term of type ``P = Q`` (or ``P ↔ Q``), then 
+      ``rw f`` replaces ``P`` with ``Q`` in the target.
+      Other variants:
+        ``rw f at hp``, ``rw ←f``, ``rw ←f at hr``.
+
+    Delete the ``sorry,`` below and replace them with a legitimate proof.
+
+    --------------------------------------------------------------------------/
+
+  theorem add_self_self_eq_double 
+    (x : ℕ) 
+  : x + x = 2 * x := 
+  begin 
+    ring,
+  end 
+
+  /-
+  For the following problem, use 
+    nat.mul_comm a b : a * b = b * a 
+  -/
+
+  example (a b c d : ℕ)
+    (hyp : c = d * a + b)
+    (hyp' : b = a * d)
+  : c = 2 * (a * d) :=
+  begin
+    sorry,
+  end
+
+  /-
+  For the following problem, use 
+    sub_self (x : ℕ) : x - x = 0
+  -/
+
+  example (a b c d : ℕ)
+    (hyp : c = b * a - d)
+    (hyp' : d = a * b)
+  : c = 0 :=
+  begin
+    sorry,
+  end
 
 
+Surjective functions
+----------------------
+Recall that a function ``f : X → Y`` is surjective if for every ``y : Y`` there exists a term ``x : X``
+such that ``f(x) = y``. 
+In type theory, for every function ``f`` we can define a corresponding proposition 
+``surjective (f) := ∀ y, ∃ x, f x = y`` and a function being surjective is equivalent to saying that the proposition ``surjective(f)`` is inhabited.
 
-.. code:: lean
+.. code:: lean 
 
-    theorem (P : Prop) : ¬ ¬ ¬ P → ¬ P :=
-    begin
-      intros nnnp p, apply nnnp, 
-      intro np, apply np, 
-      apply p,
-    end
+  import tactic 
+  open function
+
+  /--------------------------------------------------------------------------
+
+  ``unfold``
+
+    If it gets hard to keep track of the definition of ``surjective``, 
+    you can use ``unfold surjective,`` or ``unfold surjective at h,`` 
+    to get rid of it.
+
+  Delete the ``sorry,`` below and replace them with a legitimate proof.
+
+  --------------------------------------------------------------------------/
+
+  variables X Y Z : Type
+  variables (f : X → Y) (g : Y → Z)
+
+  /-
+  surjective (f : X → Y) := ∀ y, ∃ x, f x = y
+  -/
+
+  example 
+    (hf : surjective f) 
+    (hg : surjective g) 
+    : surjective (g ∘ f) :=
+  begin
+    sorry,
+  end
+
+  example 
+    (hgf : surjective (g ∘ f)) 
+    : surjective g :=
+  begin
+    sorry,
+  end
 
 
-    example (p : ℕ) : p.prime → p = 2 ∨ p % 2 = 1 :=
-    begin
-      library_search,
-    end
+Creating subgoals
+===================
+Often when we write long proofs in math, we break the proof up into simpler problems.
+This is done in Lean using the ``have`` tactic. 
 
-    #check @nat.prime.eq_two_or_odd
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
 
-    lemma eq_two_of_even_prime {p : ℕ} (hp : nat.prime p) (h_even : nat.even p) : p = 2 :=
-    begin
-      cases nat.prime.eq_two_or_odd hp, {assumption},
-      rw ← nat.not_even_iff at h, contradiction,
-    end
+  * - ``have``
+    - ``have hp : P,`` creates a new goal with target ``P`` and 
+      adds ``hp : P`` as a hypothesis to the original goal.
+
+The use of ``have`` that we have already seen is related to this one. 
+When you use the tactic ``have hq := f(hp),``
+Lean is internally replacing it with ``have hq : Q, exact f(hp),``.
+
+``have`` is crucial for being able to use theorems from the library.
+To use these theorems you have to create terms that match the hypothesis *exactly*.
+Consider the following example. 
+The type ``n > 0`` is not the same as ``0 < n``.
+If you need a term of type ``n > 0`` and you only have ``hn : 0 < n``, then you can use
+``have hn2 : n > 0, linarith,`` and you will have constructed a term ``hn2`` of type ``n > 0``.
 
 
-    lemma even_of_odd_add_odd
-      {a b : ℕ} (ha : ¬ nat.even a) (hb : ¬ nat.even b) :
-    nat.even (a + b) :=
-    begin
-      rw nat.even_add, tauto,
-    end
+We will need this lemma later. Remember to save your proof. 
+(Here's a :doc:`hint <../hint_1_have_exercise>` if you need one.)
+**Warning:** If you need to type the divisibility symbol, type ``\mid``. 
+This is **not** the vertical line on your keyboard.
 
-    lemma one_lt_of_nontrivial_factor 
-      {b c : ℕ} (hb : b < b * c) :
-    1 < c :=
-    begin
-      contrapose! hb, 
-      interval_cases c,
-    end
+.. code:: lean 
 
-    example (n : ℕ) : 0 < n ↔ n ≠ 0 :=
-    begin
-      split,
-      {intros, linarith,},
-      contrapose!,
-      simp,
-    end
+  import tactic data.nat.prime
+  open nat
 
-    lemma nontrivial_product_of_not_prime
-      {k : ℕ} (hk : ¬ k.prime) (two_le_k : 2 ≤ k) :
-    ∃ a b < k, 1 < a ∧ 1 < b ∧ a * b = k :=
-    begin
-      have h1 := nat.exists_dvd_of_not_prime2 two_le_k hk,
-      rcases h1 with ⟨a, ⟨b, hb⟩, ha1, ha2⟩,
-      use [a, b], norm_num, 
-      split, assumption,
-      split, rw [hb, lt_mul_iff_one_lt_left], linarith, 
-      cases b, {linarith}, {simp},
-      split, linarith,
-      split, rw hb at ha2, apply one_lt_of_nontrivial_factor ha2,
-      rw hb,
-    end
+  /--------------------------------------------------------------------------
 
-    -- norm_num, linarith
-    theorem three_fac_of_sum_consecutive_primes 
-      {p q : ℕ} (hp : p.prime) (hq : q.prime) (hpq : p < q) 
-      (p_ne_2 : p ≠ 2) (q_ne_2 : q ≠ 2)
-      (consecutive : ∀ k, p < k → k < q → ¬ k.prime) :
-    ∃ a b c, p + q = a * b * c ∧ a > 1 ∧ b > 1 ∧ c > 1 :=
-    begin
-      use 2, have h1 : nat.even (p + q), 
-      { apply even_of_odd_add_odd, 
-        contrapose! p_ne_2, apply eq_two_of_even_prime; assumption, 
-        contrapose! q_ne_2, apply eq_two_of_even_prime; assumption, },
+  ``have``
 
-      cases h1 with k hk, 
-      have hk' : ¬ k.prime, 
-      { apply consecutive; linarith },
+    ``have hp : P,`` creates a new goal with target ``P`` and 
+    adds ``hp : P`` as a hypothesis to the original goal.
 
-      have h2k : 2 ≤ k, { have := nat.prime.two_le hp, linarith, },
-      have h2 := nat.exists_dvd_of_not_prime2 _ hk',
-      swap, { exact h2k }, -- for some reason I think it's interesting to have the student remember that they've already proved this
-      rcases nontrivial_product_of_not_prime hk' h2k with ⟨ b, c, hbk, hck, hb1, hc1, hbc⟩,
-      use [b,c],
-      split, { rw [hk, ← hbc], ring },
-      split, { norm_num },
-      split; assumption,
-    end
+  You'll need the following theorem from the library:
+
+  nat.dvd_sub : n ≤ m → k ∣ m → k ∣ n → k ∣ m - n
+  
+     (Note that you don't need to provide n m k as inputs to dvd_sub
+     Lean can infer these from the rest of the expressions.
+     More on this tomorrow.)
+
+  Delete the ``sorry,`` below and replace it with a legitimate proof.
+
+  --------------------------------------------------------------------------/
+
+  theorem dvd_sub_one {p a : ℕ} : (p ∣ a) → (p ∣ a + 1) → (p ∣ 1) :=
+  begin
+    sorry,
+  end
+
+
+Infinitude of primes 
+=======================
+
+We'll now prove that there are infinitely many primes. 
+The strategy is to show that there is a prime greater than ``n``, for every natural number ``n``.
+We will choose this prime to be smallest non-trivial factor of ``n! + 1``.
+
+You'll need the following definitions and theorems from the library.
+
+**Primes** 
+  * ``m ∣ n := ∃ k : ℕ, m = n * k``
+  * ``m.prime :=  2 ≤ p ∧ (∀ (m : ℕ), m ∣ p → m = 1 ∨ m = p)``
+  * ``prime.not_dvd_one : (prime p) → ¬ p ∣ 1``
+
+**Factorials**
+  * ``n.fact := n!  --n factorial``
+  * ``fact_pos : ∀ (n : ℕ), 0 < n.fact``
+  * ``dvd_fact : 0 < m → m ≤ n → m ∣ n.fact``
+
+**Smallest factor** 
+  * ``n.min_fac :=`` smallest non-trivial factor of ``n``
+  * ``min_fac_prime : n ≠ 1 → n.min_fac.prime`` 
+  * ``min_fac_pos : ∀ (n : ℕ), 0 < n.min_fac``
+  * ``min_fac_dvd : ∀ (n : ℕ), n.min_fac ∣ n``
+
+If you think you need more theorems, check out `data.nat.prime <https://leanprover-community.github.io/mathlib_docs/data/nat/prime.html>`__ in Lean's prime library. 
+The exercise below is very open-ended.
+You should take your time, check the goal window at every step, and sketch out the proof on paper whenever you get lost.
+
+.. code:: lean 
+
+  import tactic data.nat.prime
+  noncomputable theory
+  open_locale classical
+
+  open nat
+
+  theorem dvd_sub_one {p a : ℕ} : (p ∣ a) → (p ∣ a + 1) → (p ∣ 1) :=
+  begin
+    sorry,
+  end
+
+  /-
+  dvd_sub_one : (p ∣ a) → (p ∣ a + 1) → (p ∣ 1)
+
+  m ∣ n := ∃ k : ℕ, m = n * k
+  m.prime :=  2 ≤ p ∧ (∀ (m : ℕ), m ∣ p → m = 1 ∨ m = p)
+  prime.not_dvd_one : (prime p) → ¬ p ∣ 1
+
+  n.fact := n! (n factorial)
+  fact_pos : ∀ (n : ℕ), 0 < n.fact
+  dvd_fact : 0 < m → m ≤ n → m ∣ n.fact
+
+  n.min_fac := smallest non-trivial factor of n
+  min_fac_prime : n ≠ 1 → n.min_fac.prime
+  min_fac_pos : ∀ (n : ℕ), 0 < n.min_fac
+  min_fac_dvd : ∀ (n : ℕ), n.min_fac ∣ n
+  -/
+
+  theorem exists_infinite_primes (n : ℕ) : ∃ p, nat.prime p ∧ p ≥ n :=
+  begin
+    set p:= (n.fact + 1).min_fac,
+    sorry,
+  end
+
+
+Final remarks 
+=================
+It would be great if there were a one-to-one correspondence between "hand-written proofs" and proofs in Lean.
+But that is far from the case.
+When we write proofs we leave out a lot of details without even realizing it and expect the reader to be intelligent enough to fill them in.
+This is both a bug and feature. 
+On the one hand this makes proofs readable. 
+On the other hand too many "trivially true" arguments make proofs undecipherable and often *wrong*.
+
+Unlike human readers, computers are pretty dumb (as of writing these notes). 
+They can only do what you tell them to do and you cannot expect them to "fill in the details".
+But it is humanly impossible to teach a computer every single trivial fact about, say the natural numbers.
+The `Lean math library <https://leanprover-community.github.io/mathlib_docs/>`__ contains a lot of trivial theorems but this collection is far from comprehensive. 
+
+So theorem proving often results involves the following steps:
+
+* Scan the library to see which theorems can be useful.
+* Choose the right hypotheses and wording for your theorem to match the theorems in the library.
+  The unfortunate truth is that changing the wording slightly might end up making the proof ten times harder to do.
+* Breaking the theorem into several small lemmas so that you can use the simplifiers more frequently.
+
+The hope is that one day we won't have to do this anymore and a theorem proving AI will exist that eliminate the difference between human proofs and machine proofs.

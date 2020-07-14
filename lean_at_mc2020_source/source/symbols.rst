@@ -1,12 +1,13 @@
 .. _symbols:
 
 
-List of Special Symbols
+Pretty Symbols in Lean
 =================================
 
+To produce a pretty symbol in Lean, type the *editor shortcut* followed by space or tab. 
 
 .. list-table::
-  :widths: 20 40 40
+  :widths: 20 35 45
   :header-rows: 1
 
   * - Unicode 
@@ -34,7 +35,7 @@ List of Special Symbols
     - and operator
   
   * - ∨ 
-    - ``or``
+    - ``\or``
     - or operator 
 
   * - ∃ 
@@ -47,7 +48,7 @@ List of Special Symbols
 
   * - ∣
     - ``\mid``
-    - divisibility 
+    - divisibility [#f1]_
 
   * - ℕ
     - ``\nat``
@@ -61,21 +62,11 @@ List of Special Symbols
     - ``\circ``
     - composition of functions
 
+  * - ⊢
+    - ``\|-``
+    - target of the goal
 
-.. +-------------------+-----------+------------------------------+--------------+
-.. | Ascii             | Unicode   | Editor shortcut              | Definition   |
-.. +===================+===========+==============================+==============+
-.. | true              |           |                              | true         |
-.. +-------------------+-----------+------------------------------+--------------+
-.. | false             |           |                              | false        |
-.. +-------------------+-----------+------------------------------+--------------+
-.. | not               | ¬         | ``\not``, ``\neg``           | not          |
-.. +-------------------+-----------+------------------------------+--------------+
-.. | /\\               | ∧         | ``\and``                     | and          |
-.. +-------------------+-----------+------------------------------+--------------+
-.. | \\/               | ∨         | ``\or``                      | or           |
-.. +-------------------+-----------+------------------------------+--------------+
-.. | ->                | →         | ``\to``, ``\r``, ``\imp``    |              |
-.. +-------------------+-----------+------------------------------+--------------+
-.. | <->               | ↔         | ``\iff``, ``\lr``            | iff          |
-.. +-------------------+-----------+------------------------------+--------------+
+
+.. rubric:: Footnotes
+
+.. [#f1] Be very careful! The symbol for divisibility is not the ``|`` symbol on your keyboard. Lean will through a cryptic error if you use it.
