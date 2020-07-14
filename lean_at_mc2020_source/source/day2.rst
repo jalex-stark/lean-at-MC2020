@@ -4,6 +4,11 @@
 Logic in Lean - Part 2
 ***************************
 
+.. todo:: 
+
+  Proof-read this file, clean the language and fix any typos.
+
+
 Your mission today is to wrap up the remaining bits of logic and move on to doing some "actual math".
 Remember to **always save your work**. 
 You might find the :doc:`Glossary of tactics<../tactics>` page and the :doc:`Pretty symbols<../symbols>` page useful.
@@ -13,21 +18,25 @@ Before we move on to new stuff, let's understand what we did yesterday.
 Behind the scenes 
 ==================
 
-**Note on brackets**
+**A note on brackets:** 
+It is not uncommon to compose half a dozen functions in Lean. 
+The brackets get really messy and unwieldy. 
+As such, Lean will often drop the brackets by following the following conventions.
 
-* The function ``P → Q → R → S`` means ``P → (Q → (R → S))``.
-* The expression ``a + b + c + d`` means ``((a + b) + c) + d``.
-* By default, arrows are bracketed on the right and binary operators on the left.
+* The function ``P → Q → R → S`` stands for ``P → (Q → (R → S))``.
+* The expression ``a + b + c + d`` stands for ``((a + b) + c) + d``.
+
+An easy way to remember this is that, arrows are bracketed on the right and binary operators on the left.
 
 Proof irrelevance 
 -------------------
 It might feel a bit weird to say that a proposition has proofs as its inhabitants. 
-Proofs can get huge and unwieldy and it seems unnecessary to have to remember not just the statement but also its proof.
+Proofs can get huge and it seems unnecessary to have to remember not just the statement but also its proof.
 This is something we don't normally do in math.
 To hide this complication, in type theory there is an axiom, called *proof irrelevance*, which says that 
 if ``P : Prop`` and ``hp1 hp2 : P`` then ``hp1 = hp2``. 
-Taking our *analogy* with sets further, you can think of a proposition as set which is either empty or contains a single element (false or true).
-In fact, in some forms of type theory (e.g. `homotopy type theory <https://en.wikipedia.org/wiki/Homotopy_type_theory>`__), this is taken as the definition of a proposition.
+Taking our *analogy* with sets further, you can think of a proposition as a set which is either empty or contains a single element (false or true).
+In fact, in some forms of type theory (e.g. `homotopy type theory <https://en.wikipedia.org/wiki/Homotopy_type_theory>`__) this is taken as the definition of propositions.
 This is of course not true for general types. 
 For example, ``0 : ℕ ≠ 1 : ℕ``. 
 
@@ -47,14 +56,11 @@ Every time you successfully construct a proof of a theorem say
 
 Lean constructs a *proof term* ``tautology : ∀ P : Prop, P → P`` 
 (you can see this by typing ``#check tautology``).
-In type theory, the *for all* quantifier, ``∀``, is a generalized function.
-Another way Lean will sometimes describe this is as 
-``tautology : (P : Prop) → (P → P)``.
-So, if ``Q : Prop``, then ``tautology(Q) : Q → Q``.
 
-Note however that ``tautology`` is not exactly a function because the codomain ``P → P`` is not fixed and changes with ``P``.
-In type theory, this is called a `dependent function <https://en.wikipedia.org/wiki/Dependent_type>`__.
-Understanding these is beyond the scope of this class and we will simply pretend that this is just a weird function.
+In type theory, the *for all* quantifier, ``∀``, is a generalized function, called a `dependent function <https://en.wikipedia.org/wiki/Dependent_type>`__.
+For all practical purposes, we can think of ``tautology`` as having the type ``(P : Prop) → (P → P)``.
+Note that this is not a function in the classical sense of the word because the codomain ``(P → P)`` *depends* on the input variable ``P``.
+If ``Q : Prop``, then ``tautology(Q)`` is a term of type  ``Q → Q``.
 
 Consider a theorem with multiple hypothesis, say 
 
@@ -66,7 +72,6 @@ Once we provide a proof of it, Lean will create a proof term
 ``hello_world : (hp:P) → (hq:Q) → (hr:R) → S``.
 So that if we have terms ``hp' : P``, ``hq' : Q``, ``hr' : R``
 then ``hello_world hp' hq' hr'`` (note the convenient lack of brackets) will be a term of type ``S``.
-You can even use ``intro``, ``exact``, ``have``, and ``apply`` tactics with proofs.
 
 
 Once constructed, any term can be used in a later proof. For example,
@@ -95,11 +100,11 @@ And / Or
 ===============================
 The operators *and* (``∧``) and *or* (``∨``) are very easy to use in Lean.
 Given a term ``hpq : P ∧ Q``, 
-there are tactics in Lean that let you 
+there are tactics that let you 
 create terms ``hp : P`` and ``hq : Q``, and vice versa.
 Similarly for ``P ∨ Q``, with a subtle change (see below).
 
-Note that when multiple goals are open, you are trying to solve the topmost goal.
+**Note** that when multiple goals are open, you are trying to solve the topmost goal.
 
 .. list-table:: 
   :widths: 10 90
@@ -110,9 +115,6 @@ Note that when multiple goals are open, you are trying to solve the topmost goal
 
       If ``hpq`` is a term of type ``P ∧ Q``, then 
       ``cases hpq with hp hq,`` breaks it into ``hp : P`` and ``hp : Q``.
-
-      If ``hpq`` is a term of type ``P × Q``, then 
-      ``cases hpq with hp hq,`` breaks it into ``hp : P`` and ``hp : Q``. 
 
       If ``fg`` is a term of type ``P ↔ Q``, then 
       ``cases fg with f g,`` breaks it into ``f : P → Q`` and ``g : Q → P``.
@@ -238,11 +240,11 @@ If you have a term ``hp : ∃ x : X, P x`` then from this you can extract a witn
       and ``y`` is a term of type ``X``, then 
       ``use y,`` changes the target to ``P y`` and tries to close the goal.
 
-Finally, we now know enough Lean tactics to start doing some fun stuff.
+Finally, we know enough Lean tactics to start doing some fun stuff.
 
 Barber paradox
 ------------------------------------  
-Let's disprove the "barber paradox," due to Bertrand Russell. 
+Let's disprove the "barber paradox" due to Bertrand Russell. 
 The claim is that in a certain town there is a (male) barber that shaves all the men who do not shave themselves. (Why is this a paradox?)
 Prove that this is a contradiction.
 Here are some :doc:`hints <../hint_1_barber_paradox>` if you get stuck.
@@ -282,7 +284,7 @@ Here are some :doc:`hints <../hint_1_barber_paradox>` if you get stuck.
   --END--
 
 
-The math campers singing paradox 
+Mathcampers singing paradox 
 ------------------------------------
   
 Assume that the main lounge is non-empty.
@@ -332,12 +334,12 @@ Relationship conundrum
 A relation ``r`` on a type ``X`` is a map ``r : X → X → Prop``.
 We say that ``x`` is *related* to ``y`` if ``r x y`` is inhabited.
 
-* ``r`` is reflexive if ``x`` is related to itself.
-* ``r`` is symmetric if ``x`` is related to ``y`` implies ``y`` is related to ``x``.
-* ``r`` is transitive if ``x`` is related to ``y`` and ``y`` is related to ``x`` implies ``z`` is related to ``z``.
-* ``r`` is connected if for all ``x`` there is a ``y`` such that ``x`` is related to ``y``.
+* ``r`` is reflexive if ``∀ x : X``, ``x`` is related to itself.
+* ``r`` is symmetric if ``∀ x y : X``, ``x`` is related to ``y`` implies ``y`` is related to ``x``.
+* ``r`` is transitive if ``∀ x y z : X``, ``x`` is related to ``y`` and ``y`` is related to ``x`` implies ``z`` is related to ``z``.
+* ``r`` is connected if for all ``x : X`` there is a ``y : Y`` such that ``x`` is related to ``y``.
 
-In the following problem, show that if a relation is symmetric, transitive, and connected,
+Show that if a relation is symmetric, transitive, and connected,
 then it is also reflexive.
 
 .. code:: lean
@@ -367,7 +369,7 @@ In mathlib, divisibility for natural numbers is defined as the following *propos
   a ∣ b := (∃ k : ℕ, a = b * k)
 
 For example, ``2 | 4`` will be a proposition ``∃ k : ℕ, 4 = 2 * k``. 
-**Very important.** And so ``2 | 4`` is not saying that "2 divides 4 *is true*". 
+**Very important.** The statement ``2 | 4`` is not saying that "2 divides 4 *is true*". 
 It is simply a proposition that requires a proof. 
 
 Similarly, the mathlib library also contains the following definition of ``prime``.
@@ -380,11 +382,12 @@ Similarly, the mathlib library also contains the following definition of ``prime
       ∧                                           -- and 
       ∀ (m : ℕ), m ∣ p → m = 1 ∨ m = p            -- if m divides p, then m = 1 or m = p.
 
-For every natural number ``n``, 
+Same as with divisibility, for every natural number ``n``, 
 ``nat.prime n`` is a *proposition*.
 So that ``nat.prime 101`` requires a proof.
 It is possible to go down the rabbit hole and prove it using just the axioms of natural numbers.
-Fortunately, there are tactics in Lean for providing such trivial proofs such as these.
+However, this might come at the cost of your sanity.
+Fortunately, there are tactics in Lean for proving trivial proofs such as these.
 
 .. list-table:: 
   :widths: 10 90

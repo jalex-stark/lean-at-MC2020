@@ -1,116 +1,358 @@
 .. _day4:
 
-***************************
-Infinitude of primes
-***************************
+**************************
+Sqrt 2 is irrational
+**************************
 
-The way we will prove that there are infinitely many primes is by showing that 
-**for every natural number n, the smallest prime factor of (n! + 1) is greater than n**.
-The steps will be following:
+.. todo:: 
 
-1. We'll let ``p`` be the smallest factor of ``n! + 1`` that is bigger than 1.
-2. We'll show that ``p`` is a prime.
-3. Next we'll show that ``p > n``.  This is a proof by contradiction. 
-
-  4. Suppose on the contrary that ``p ≤ n``.
-  5. This implies that ``p`` divides ``n!``.
-  6. As ``p`` divides ``n!`` and ``n! + 1``, ``p`` divides 1.
-  7. This is a contradiction.
+  Proof-read this file, clean the language and fix any typos.
 
 
+Today we will teach Lean that :math:`\sqrt{2}` is irrational.
+Let us start by reviewing some concepts we encountered yesterday.
 
-.. * - ``have``
-..     - The tactic ``have hp : P,`` adds the hypothesis ``hp : P`` to the current goal 
-..       and opens a new subgoal with target ``⊢ P``. 
-      
-..       Mathematically, this is like introducing an intermediate claim.
+Implicit arguments
+====================
+Consider the following theorem which says that the smallest non-trivial factor of a natural number greater than 1 is a prime number. 
+
+.. code:: 
+  
+  min_fac_prime : n ≠ 1 → n.min_fac.prime
+
+It needs only one argument, namely a term of type ``n ≠ 1``.
+But we have not told Lean what ``n`` is! 
+That's because if we pass a term, say ``hp : 2 ≠ 1`` to ``min_fac_prime`` then from ``hp`` Lean can infer that ``n = 2``.
+``n`` is called an *implicit* argument. 
+An argument is made implicit by using curly brackets ``{`` and ``}`` instead of the usual ``(`` and ``)`` while defining the theorem.
+
+.. code:: 
+  
+  theorem min_fac_prime {n : ℕ} (hne1 : n ≠ 1) : n.min_fac.prime := ...
+
+Sometimes the notation is ambiguous and Lean is unable to infer the implicit arguments.
+In such a case, you can force all the arguments to become explicit by putting an ``@`` symbol in from on the theorem. For example,
+
+.. code:: 
+  
+  @min_fac_prime : (n : ℕ) → n ≠ 1 → n.min_fac.prime
+
+Use this sparingly as this makes the proof very hard to read and debug.
 
 
-In Lean, division is defined as ``p | a`` is defined as ``∃ k : ℕ, a = p * k``.
+The two haves 
+===============
+
+We have seen two slightly different variants of the ``have`` tactic. 
+
+.. code:: 
+
+  have hq := ... 
+  have hq : ...
+
+In the first case, we are defining ``hq`` to be the term on the right hand side. 
+In the second case, we are saying that we do not know what the term ``hq`` is but we know it's type.
+
+Let's consider the example of ``min_fac_prime`` again. 
+Suppose we want to conclude that the smallest factor of 10 is a prime. 
+We will need a term of type ``10.min_fac.prime``.
+If this is the target, we can use ``apply min_fac_prime,``.
+If not, we need a proof of ``10 ≠ 1`` to provide as input to ``min_fac_prime``. 
+For this we'll use 
+
+.. code::
+  
+  have ten_ne_zero : 10 ≠ 1,
+
+which will open up a goal with target ``10 ≠ 1``.
+If on the other hand, you have another hypothesis, say ``f : P →  (10 ≠ 1)`` and a term ``hp : P``, then 
+
+.. code::
+  
+  have ten_ne_zero := f(hp)
+
+will immediately create a term of type ``10 ≠ 1``. More generally, remember that 
+
+1. "``:=``" stands for definition. ``x := ...`` means that ``x`` is defined to be the right hand side.
+2. "``:``" is a way of specifying type. ``x : ...`` means that the type of ``x`` is the right hand side. 
+3. "``=``" is only ever used in propositions and has nothing to do with terms or types.
 
 
-..code::
+Sqrt(2) is irrational
+=======================
+We will show that there do not exist non-zero natural numbers ``m`` and ``n`` such that 
 
-    #eval nat.min_fac 51 -- smallest divisor of n that is greater than 1, unless n = 1
-    #eval nat.fact 5  -- n factorial
+.. code:: 
 
-    #check nat.min_fac_prime -- smallest divisor of n is prime
-    #check nat.min_fac_pos -- smallest divisor of n is positive
-    #check nat.min_fac_dvd -- smallest divisor of n divides n
+  2 * m ^ 2 = n ^ 2  -- (*)
 
-    #check nat.fact_pos -- n factorial is always > 0
-    #check nat.dvd_fact -- n divides n factorial
+The crux of the proof is very easy. 
+You simply have to start with the assumption that ``m`` and ``n`` are coprime *without any loss of generality* and derive a contradiction.
+But proving that *without a loss of generality* is a valid argument requires quite a bit of effort. 
+This proof is broken down into several parts. 
+The first two parts prove ``(*)`` assuming that ``m`` and ``n`` are coprime.
+The rest of the parts prove the *without loss of generality* part.
 
-    #check nat.dvd_one 
-    #check nat.dvd_sub
+For this problem you'll need the following definitions.
 
-    #print nat.prime
-    /-
-    infinitude_of_primes.lean:31:0: information print result
-    def nat.prime (p : ℕ): ℕ → Prop :=
-      2 ≤ p ∧ ∀ (m : ℕ), m ∣ p → m = 1 ∨ m = p
-    -/
+  * ``m.gcd n : ℕ`` is the gcd of ``m`` and ``n``.
+  * ``m.coprime n`` is defined to be the proposition ``m.gcd n = 1``.
 
-1.
+The descriptions of the library theorems that you'll be needing are included as comments. 
+Have fun!
+
+Lemmas for proving (*) assuming m and n are coprime.
+------------------------------------------------------------------------------
+.. code:: lean 
+
+  import tactic
+  import data.nat.basic
+  import data.nat.prime
+
+
+  noncomputable theory
+  open_locale classical
+
+  open nat 
+
+  --BEGIN--
+  /-
+  prime.dvd_of_dvd_pow : ∀ {p m n : ℕ}, p.prime → p ∣ m ^ n → p ∣ m
+  -/
+  lemma two_dvd_of_two_dvd_sq {k : ℕ} 
+    (hk : 2 ∣ k ^ 2) 
+  : 2 ∣ k :=
+  begin
+    apply prime.dvd_of_dvd_pow,
+    sorry,
+  end
+
+  -- to switch the target from ``P = Q`` to ``Q = P``, 
+  -- use the tactic ``symmetry,``
+  lemma division_lemma_n {m n : ℕ} 
+    (hmn : 2 * m ^ 2 = n ^ 2) 
+  : 2 ∣ n :=
+  begin
+    sorry,
+  end
+
+  lemma div_2 {m n : ℕ} (hnm : 2 * m = 2 * n) : (m = n) :=
+  begin 
+    linarith,
+  end 
+
+  lemma division_lemma_m {m n : ℕ} 
+    (hmn : 2 * m ^ 2 = n ^ 2) 
+  : 2 ∣ m :=
+  begin
+    apply two_dvd_of_two_dvd_sq,
+    sorry,
+  end
+  --END--
+
+Prove (*) assuming m and n are coprime.
+------------------------------------------------------------------------------
 
 .. code:: lean 
-  :name: dvd_sub
 
-  import tactic data.nat.prime
-
-  #check @nat.dvd_sub
-  /- nat.dvd_sub : ∀ {k m n : ℕ}, n ≤ m → k ∣ m → k ∣ n → k ∣ m - n -/
+  import tactic
+  import data.nat.basic
+  import data.nat.prime
 
 
-  theorem dvd_sub' (p a b : ℕ) : (p ∣ a + b) → (p ∣ a) → (p ∣ b) :=
+  noncomputable theory
+  open_locale classical
+
+  open nat 
+  
+  lemma two_dvd_of_two_dvd_sq {k : ℕ} 
+    (hk : 2 ∣ k ^ 2) 
+  : 2 ∣ k :=
   begin
-    have H : a ≤ a + b, {simp, },
-    have K : (a + b) - a = b, {simp,},
-    have := (@nat.dvd_sub p (a + b) a H),
-    rw K at this,
-    tauto,
+    sorry,
   end
 
-  lemma prime_ge_2 (p:nat) (pp: p.prime) : 2 ≤ p :=
+  lemma division_lemma_n {m n : ℕ} 
+    (hmn : 2 * m ^ 2 = n ^ 2) 
+  : 2 ∣ n :=
   begin
-    cases pp,
-    exact pp_left,
+    sorry,
   end
 
-  lemma prime_not_dvd_one_aux (p:nat) (pp: 2 ≤ p) : ¬ p ∣ 1 :=
+  lemma division_lemma_m {m n : ℕ} 
+    (hmn : 2 * m ^ 2 = n ^ 2) 
+  : 2 ∣ m :=
   begin
-    contrapose! pp,
-    have := @nat.dvd_one p,
-    rw this at pp,
-    linarith,
+    sorry,
   end
 
-  lemma prime_not_dvd_one (p:nat) (pp: nat.prime p) : ¬ p ∣ 1 :=
+  -- Assume that everything above this line is true.
+
+  --BEGIN--
+  
+  /-
+  theorem nat.not_coprime_of_dvd_of_dvd  : 1 < d → d ∣ m → d ∣ n → ¬m.coprime n
+  -/
+
+  theorem sqrt2_irrational' : 
+    ¬ ∃ (m n : ℕ),
+    2 * m^2 = n^2 ∧ 
+    m.coprime n 
+  :=
   begin
-    apply prime_not_dvd_one_aux,
-    exact prime_ge_2 p pp,
+    by_contradiction,
+    rcases a with ⟨m, n, hmn, h_cop⟩, 
+    -- rcases is a way of doing cases iteratively
+    -- you get the brackets by typing ``\langle`` and ``\rangle``
+    sorry,
   end
 
-  theorem exists_infinite_primes (n : ℕ) : ∃ p, nat.prime p ∧ p ≥ n :=
+  --END--
+
+  
+
+Lemmas for proving (*) assuming m ≠ 0
+------------------------------------------------------------------------------
+.. code:: lean 
+
+  import tactic
+  import data.nat.basic
+  import data.nat.prime
+
+
+  noncomputable theory
+  open_locale classical
+
+  open nat 
+
+
+  theorem sqrt2_irrational' : 
+    ¬ ∃ (m n : ℕ),
+    2 * m^2 = n^2 ∧ 
+    m.coprime n 
+  :=
   begin
-    set p:= nat.min_fac (n.fact + 1), use p,
-    have key1 : p ∣ n.fact + 1, by exact nat.min_fac_dvd (n.fact + 1),
-    have pp: nat.prime p,
-    {
-      apply nat.min_fac_prime,
-      have := nat.fact_pos n,
-      linarith,
-    },
-    split, assumption,
-    {
-      by_contradiction,
-      push_neg at a,
-      have key2 : p ∣ n.fact, apply nat.dvd_fact,
-      exact nat.min_fac_pos (n.fact + 1),
-      linarith,
-      have := dvd_sub' p n.fact 1 key1 key2,
-      exact prime_not_dvd_one p pp this, -- can get rid of this
-    },
+    sorry,
   end
 
+  -- Assume that everything above this line is true.
+
+  --BEGIN--
+
+
+  lemma ne_zero_ge_zero {n : ℕ} 
+    (hne : n ≠ 0) 
+  : (0 < n)
+  :=
+  begin 
+    contrapose! hne,
+    sorry,
+  end 
+
+  /-
+  nat.pow_pos : ∀ {p : ℕ}, 0 < p → ∀ (n : ℕ), 0 < p ^ n
+  -/
+  lemma ge_zero_sq_ge_zero {n : ℕ} (hne : 0 < n) : (0 < n^2)
+  :=
+  begin 
+    sorry,
+  end 
+
+  lemma cancellation_lemma {k m n : ℕ}
+  (hk_pos : 0 < k^2)
+  (hmn : 2 * (m * k) ^ 2 = (n * k) ^ 2)
+  : 2 * m ^ 2 = n ^ 2
+  := 
+  begin 
+    apply (nat.mul_left_inj hk_pos).mp,
+    ring at *,
+    exact hmn,
+  end 
+
+  --END--
+
+
+Prove (*) assuming m ≠ 0
+------------------------------------------------------------------------------
+.. code:: lean 
+
+  import tactic
+  import data.nat.basic
+  import data.nat.prime
+
+
+  noncomputable theory
+  open_locale classical
+
+  open nat 
+
+
+  theorem sqrt2_irrational' : 
+    ¬ ∃ (m n : ℕ),
+    2 * m^2 = n^2 ∧ 
+    m.coprime n 
+  :=
+  begin
+    sorry,
+  end
+
+  lemma ne_zero_ge_zero {n : ℕ} 
+    (hne : n ≠ 0) 
+  : (0 < n)
+  :=
+  begin 
+    contrapose! hne,
+    sorry,
+  end 
+  
+  lemma ge_zero_sq_ge_zero {n : ℕ} (hne : 0 < n) : (0 < n^2)
+  :=
+  begin 
+    sorry,
+  end 
+
+  lemma cancellation_lemma {k m n : ℕ}
+  (hk_pos : 0 < k^2)
+  (hmn : 2 * (m * k) ^ 2 = (n * k) ^ 2)
+  : 2 * m ^ 2 = n ^ 2
+  := 
+  begin 
+    sorry,
+  end 
+
+  -- Assume that everything above this line is true.
+
+  --BEGIN--
+  /-
+  gcd_pos_of_pos_left : ∀ {m : ℕ} (n : ℕ), 0 < m → 0 < m.gcd n
+  gcd_pos_of_pos_right : ∀ (m : ℕ) {n : ℕ}, 0 < n → 0 < m.gcd n
+  exists_coprime : ∀ {m n : ℕ}, 0 < m.gcd n → (∃ (m' n' : ℕ), m'.coprime n' ∧ m = m' * m.gcd n ∧ n = n' * m.gcd n)
+  -/
+  theorem wlog_coprime :
+    (∃ (m n : ℕ),
+    2 * m^2 = n^2 ∧
+    m ≠ 0 )
+    → (∃ (m' n' : ℕ),
+      2 * m'^2 = n'^2 ∧
+      m'.coprime n' )
+  :=
+  begin
+    intro key,  
+    rcases key with ⟨m, n, hmn, hme0⟩,
+    set k := m.gcd n with hk, 
+    -- might be useful to declutter
+    -- you can replace all the ``m.gcd n`` with ``k`` using ``rw ←hk,`` if needed
+    sorry,
+  end
+
+  theorem sqrt2_irrational'' : 
+    ¬ ∃ (m n : ℕ),
+    2 * m^2 = n^2 ∧ 
+    m ≠ 0
+  :=
+  begin
+    sorry,
+  end
+
+  --END--
 

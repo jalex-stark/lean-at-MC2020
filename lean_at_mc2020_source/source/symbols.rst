@@ -62,9 +62,9 @@ To produce a pretty symbol in Lean, type the *editor shortcut* followed by space
     - ``\circ``
     - composition of functions
 
-  * - ⊢
-    - ``\|-``
-    - target of the goal
+  * - ≠
+    - ``\ne``
+    - not equal to
 
 
 .. rubric:: Footnotes

@@ -1,10 +1,19 @@
 .. _introduction:
 
+*****************
 Introduction
-============
+*****************
+
+.. todo:: 
+
+  Clean up the .lean files in the solutions folder and make them match with the problems in the notes.
+
+.. todo:: 
+
+  Proof-read this file, clean the language and fix any typos.
 
 What is Lean?
---------------
+===============
 `Lean <https://leanprover.github.io/about/>`__ is an open source proof-checker and a proof-assistant. 
 One can *explain* mathematical proofs to it and it can check their correctness.
 It also simplifies the proof writing process by providing ``goals`` and ``tactics``.
@@ -13,7 +22,7 @@ Lean is built on top of a formal system called type theory.
 In type theory, instead of elements we have terms and every term has a type.
 When translated to math, terms can be either mathematical objects, functions, propositions, or proofs.
 The only two things Lean can do is *create* terms and *check* their types.
-By iterating these two operations Lean can verify complex mathematical proofs.
+By iterating these two operations one can teach Lean to verify complex mathematical proofs.
 
 .. code-block:: lean
 
@@ -50,7 +59,7 @@ By iterating these two operations Lean can verify complex mathematical proofs.
 
 
 How to use these notes 
------------------------
+=========================
 Every once in a while, you will see a code snippet like this:
 
 .. code-block:: lean
@@ -61,11 +70,11 @@ Clicking on the ``try it!`` button in the upper right corner will
 open a copy in a window
 so that you can edit it,
 and Lean provides feedback in the ``Lean Goal`` window.
-There are several exercises in these notes to be done that way.
+There are several exercises in these notes to be done this way.
 
 These notes are designed for a 5-day Lean crash course at Mathcamp 2020.
 On Days 1 and 2 you'll learn the basics of type theory and some basic ``tactics`` in Lean. 
-On Days 3, 4, 5 you'll use these to prove increasingly complex theorems: a number theory puzzle, infinitude of primes, and irrationality of :math:`\sqrt{2}`.
+On Days 3, 4, 5 you'll use these to prove increasingly complex theorems, namely the infinitude of primes and irrationality of :math:`\sqrt{2}`.
 
 These notes provide a sneak-peek into the world of theorem proving in Lean and are by no means comprehensive.
 It is recommended that you simultaneously attempt at least one of the following two options.
@@ -83,15 +92,13 @@ You're highly encouraged to join one or both of these channels.
 
 
 Acknowledgments.
-----------------
-These notes are developed by `Apurva Nakade <https://apurvanakade.github.io>`__ and `Jalex Stark <https://jalexstark.com/>`__.
-Large chunks of these notes are from the various learning resources available on the `leanprover-community website <https://leanprover-community.github.io/learn.html>`__.
-Thanks to Joanna Boyland for proof reading the drafts.
-The number theory puzzle on Day 3 is from Codewars and the proof of the infinitude of primes on Day 4 is from `mathlib <https://github.com/leanprover-community/mathlib/blob/53c1531/src/data/real/irrational.lean#L83>`__.
+===================
+These notes are developed by `Apurva Nakade <https://apurvanakade.github.io>`__ and `Jalex Stark <https://jalexstark.com/>`__ with a lot of help from Mathcamp campers and Mathcamp staff Joanna and Maya (thanks!).
+Large chunks of these notes are taken from various learning resources available on the `leanprover-community website <https://leanprover-community.github.io/learn.html>`__.
 
 
-Further Reading.
-------------------
+Useful Links.
+==================
 #. `Formalizing 100 theorems <http://www.cs.ru.nl/~freek/100/index.html>`__
 #. `Formalizing 100 theorems in Lean <https://leanprover-community.github.io/100.html>`__
 #. Articles, videos, blog posts, etc. 
