@@ -1,249 +1,202 @@
 .. _day5:
 
-**************************
-Sqrt 2 is irrational
-**************************
+***************************
+Bits & Pieces
+***************************
+
+Namespaces 
+===========
+
+.. todo:: 
+
+  Proof-read this file, clean the language and fix any typos.
+
+
+.. todo:: 
+
+  Add final remarks.
+
+
+Lean provides us with the ability to group definitions into nested, hierarchical *namespaces*:
+
+.. code-block:: lean
+
+  namespace vmcsp
+    def tau := "TAU on M-Th from 1-3"
+    #eval tau
+  end vmcsp
+
+  def tau := "no TAU on F"
+  #eval tau
+  #eval vmcsp.tau
+
+  open vmcsp
+
+  #eval tau -- error
+  #eval vmcsp.tau
+
+When we declare that we are working in the namespace ``vmscp``, every identifier we declare has a full name with prefix "``vmscp``". 
+Within the namespace, we can refer to identifiers by their shorter names, but once we end the namespace, we have to use the longer names.
+
+The ``open`` command brings the shorter names into the current context. Often, when we import a theory file, we will want to open one or more of the namespaces it contains, to have access to the short identifiers. 
+Further if ``x`` is a term of type ``nat`` and ``f`` is a term defined in namespace ``nat`` then ``nat.f x`` can be shortened to ``x.f``.
+Note that ``ℕ`` is just another notation for ``nat``.
+
+Coercions 
+===========
+In type theory every term has a type and two terms of different types cannot be equal to each other.
+This makes it impossible to write statements like ``|m|^2 = m^2`` where ``m : ℤ`` and ``|m| : ℕ`` is the absolute value of ``m``.
+But in math, we do want this statement to be true!
+The round about way to deal with this is through *coercions*.
+Lean will coerce the above equality to live entirely in integers as, ``↑|m|^2 = m^2``. 
+This is done using an injective function ``ℕ → ℤ``.
+
+Sometimes it is possible (and necessary) to get rid of the coercions. 
+For example, say we start out with ``↑|m|^2 = m^2`` and eventually reduce it to ``↑|m|^2 = ↑1``.
+The tactic for getting rid of coercions is ``norm_cast`` which will reduce the above expression to ``|m|^2 = 1``.
+
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``norm_cast``
+    - ``norm_cast,`` tries to clear out coercions.
+
+      ``norm_cast at hp,`` tries to clear out coercions at the hypothesis ``hp``.
+
 
 .. code:: lean 
 
-  import tactic
-  import data.nat.basic
-  import data.nat.prime
+  import tactic data.nat.basic data.int.basic 
+  noncomputable theory 
+  open_locale classical 
 
-  noncomputable theory
-  open_locale classical
-
-  -- have them prove it assuming as much of the technical assumption
-
-  lemma two_dvd_of_two_dvd_sq (m n : ℕ) : 2 * m^2 = n^2 → 2 ∣ n :=
+  theorem sqrt2_irrational_nat : 
+    ¬ ∃ (m n : ℕ),
+    2 * (m * m) = (n * n) ∧ 
+    m ≠ 0
+  :=
   begin
-    intros eq₁,
-    have : 2 ∣ n^2, by { use m^2, exact eq.symm eq₁},
-    exact nat.prime.dvd_of_dvd_pow nat.prime_two ‹2 ∣ n^2 ›,
+    sorry,
   end
 
+  -- Assume the above theorem
 
-  lemma gcd_div_left (a b : ℕ) : (nat.gcd a b) ∣ a :=
-  begin
-    refine nat.gcd_eq_right_iff_dvd.mpr _,
-    simp only [nat.gcd_gcd_self_right_left],
-  end
-
-
-  -- maynbe the next one is a level and the previous one is provided?
-  lemma gcd_div_right (a b : ℕ) : (nat.gcd a b) ∣ b :=
-  begin
-    rw nat.gcd_comm, 
-    apply gcd_div_left,
-  end
-
-
-  -- i think the following two lemma can be "levels". 
-  lemma eq_zero_of_sq_eq_zero (m : ℕ) (hm : m^2 = 0) : m = 0 :=
-  begin
-    simp only [nat.pow_two] at hm, 
-    simp only [nat.mul_eq_zero, or_self] at hm,
-    assumption,
-  end
-
-  lemma sq_eq_zero_iff_eq_zero (m : ℕ) : m^2 = 0 ↔ m = 0 :=
-  begin
-    split, 
-      {exact eq_zero_of_sq_eq_zero m,},
-      { intro h, 
-        rw h, 
-        ring,}
-  end
-
-  -- lemma mul_right_eq_self_iff {a b : ℕ} (ha : 0 < a) : a * b = a ↔ b = 1 :=
-  -- suffices a * b = a * 1 ↔ b = 1, by rwa mul_one at this,
-  -- nat.mul_right_inj ha
-
-  -- this lemma needs a better name
-  lemma gcd_spec 
-    (m n m' n' k : ℕ) 
-    (hk : k = nat.gcd m n)
-    (hmk : m = k * m')
-    (hnk : n = k * n')
-    (hm : 0 < m)
-    (hn : 0 < n)
-  : nat.coprime m' n' :=
-  begin
-    unfold nat.coprime,
-    have key := nat.gcd_mul_left k m' n',
-    rw [← hmk, ← hnk, ← hk] at key,
-    symmetry' at key,
-    rwa nat.mul_right_eq_self_iff at key,
-    rw hk,
-    apply nat.gcd_pos_of_pos_left,
-    exact hm,
-  end
-
-  -- i think lemmas in the library usually use 0 < n instead of n ≠ 0.
-
-  lemma wlog_nonzero (m n : ℕ) (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : n ≠ 0 :=
-  begin
-    contrapose! hm,
-    rw hm at hmn, ring at hmn,
-    rw ← sq_eq_zero_iff_eq_zero,
-    rw nat.mul_eq_zero at hmn,
-    norm_num at hmn, exact hmn,
-  end
-
-  lemma wlog_gcd' (m n : ℕ) (hm : m ≠ 0) (hmn : 2 * m^2 = n^2) : 
-  ∃ m' n', nat.coprime m' n' ∧ m' ≠ 0 ∧ 2 * m'^2 = n'^2 :=
-  begin
-    -- i don't really know the difference between set and let, 
-    -- but i think set usually works better for me
-    set k := m.gcd n,
-    have hkm : k ∣ m := gcd_div_left m n, 
-    have hkn : k ∣ n := gcd_div_right m n, 
-    -- have hn : n ≠ 0 := wlog_nonzero _ _ hm hmn,
-    have hk : k ≠ 0, 
-      { rw ← nat.pos_iff_ne_zero,
-      apply nat.gcd_pos_of_pos_left,
-      rwa nat.pos_iff_ne_zero },
-    cases hkm with m' hkm,
-    cases hkn with n' hkn,
-    use [m', n'],
-    split, apply gcd_spec m n m' n' k,
-      simp,
-      assumption,
-      assumption,
-      rwa nat.pos_iff_ne_zero,
-      rwa nat.pos_iff_ne_zero,
-    split,
-      rw hkm at hm, contrapose! hm, rw hm, ring,
-    rw [hkn, hkm] at hmn, ring_exp at hmn, 
-    rw nat.mul_right_inj at hmn,
-    finish,
-    rw nat.pos_iff_ne_zero, contrapose! hk,
-    rwa ← sq_eq_zero_iff_eq_zero, 
-    -- assumption doesn't work here... yikes!
-    finish,
-  end
-
-  lemma wlog_gcd : --(p q : ℕ) (q_ne_zero : q ≠ 0) (h : nat.coprime p q) (hpq : 2 * q^2 = p^2): 
-  ¬( ∃ p q : ℕ,
-      q ≠ 0 ∧
-      nat.gcd p q = 1∧ 
-      2 * q^2 = p^2) →
-  ¬( ∃ p q : ℕ,
-      q ≠ 0 ∧
-      2 * q^2 = p^2):= 
+  lemma num_2 : (2 : ℚ).num = 2 := 
   begin 
-    contrapose!,
-    intros,
-    cases a with p h,
-    cases h with q h, 
-    cases h with q_ne_zero rational_2,
-
-    let k:= nat.gcd p q,
-    have : (∃ p' q' : ℕ, p = k * p' ∧ q = k * q' ∧ nat.coprime p' q'), by sorry, --
-    cases this with p' this, 
-    cases this with q' this, 
-    cases this with hp this,
-    cases this with hq hpq,
-    have q'_ne_zero: q' ≠ 0, by sorry, --
-    have : 2 * q'^2 = p'^2, by sorry, --
-    use [p',q', q'_ne_zero, hpq, this],
-  end 
-
-  #check nat.le_of_dvd
-  theorem sqrt2_irrational_aux (p q : ℕ) (hp : p ≠ 0) : 
-  2 * p^2 ≠ q^2 :=
-  begin
-    intro hpq,
-    -- have hq : q ≠ 0, apply wlog_nonzero _ _ hp hpq,
-    have key := wlog_gcd' p q hp hpq,
-    rcases key with ⟨ m , n, hmn' , hm , hmn ⟩ ,
-    clear' hpq hp p q,
-    unfold nat.coprime at hmn',
-    have h2m : 2 ∣ n,
-    apply two_dvd_of_two_dvd_sq, exact hmn,
-    suffices key : 2 ∣ m,
-      { have := nat.dvd_gcd key h2m, 
-      replace this := nat.le_of_dvd _ this; linarith },
-      
-    -- have h2m' := h2m,
-    cases h2m with n' hn',
-    rw hn' at hmn, ring_exp at hmn, norm_num at hmn,
-    have : 2 * n'^2 = m^2 := by linarith,
-    apply two_dvd_of_two_dvd_sq, exact this,
+    ring,
   end
 
-  theorem sqrt2_irrational'' : 
-  ¬( ∃ p q : ℕ,
-        q ≠ 0 ∧
-        2 * p^2 = q^2) :=
-  begin
-    push_neg,
-    intros, 
-    by_cases hq : q = 0, 
-      {left, exact hq}, right,
-    exact sqrt2_irrational_aux _ _ hq,
+  lemma div_2 : (2 : ℚ).denom = 1 := 
+  begin 
+    ring,
   end
 
-  theorem sqrt2_irrational' : 
-  ¬( ∃ p q : ℕ,
-        q ≠ 0 ∧
-        2 * q^2 = p^2) :=
+  /-
+  q.denom = denominator of q (valued in ℕ)
+  q.num = numerator of q (valued in ℤ)
+  
+  for integer m, 
+  m.nat_abs = absolute value of m (valued in ℕ)
+
+  rat.mul_self_denom : ∀ (q : ℚ), (q * q).denom = q.denom * q.denom
+  rat.mul_self_num : ∀ (q : ℚ), (q * q).num = q.num * q.num
+  int.nat_abs_mul_self' : ∀ (a : ℤ), ↑(a.nat_abs) * ↑(a.nat_abs) = a * a
+  rat.denom_ne_zero : ∀ (q : ℚ), q.denom ≠ 0
+  -/
+
+  /-
+  Use ``squeeze_simp at hp,`` to commute products with coercions. 
+  See the goal window!
+  -/
+
+  theorem sqrt2_irrational : 
+  ¬ (∃ q : ℚ, 2 = q * q) 
+  :=
   begin
-  apply wlog_gcd,
-  by_contradiction h,
-
-    cases h with p h, 
-    cases h with q h, 
-    cases h with q_ne_zero h, 
-    cases h with coprime_pq h,
-      
-
-    have eq₂: 2 ∣ p := two_dvd_of_two_dvd_sq q p h,
-
-    have eq₂' := eq₂,
-
-    cases eq₂ with p₁ eq₂,
-
-    rw eq₂ at h,
-
-    have : 0 < 2, by {simp only [nat.succ_pos']},
-    have eq₃: q^2 = 2 * p₁^2,
-      {apply (nat.mul_right_inj this).1, ring at *, assumption},
-
-    have eq₄: 2 * p₁^2 = q^2,
-      by { exact eq.symm eq₃},
-
-    have eq₅: 2 ∣ q,
-      exact two_dvd_of_two_dvd_sq p₁ q eq₄,
-
-    have eq₆: 2 ∣ 1,
-    { suffices : 2 ∣ p.gcd q,
-      rw coprime_pq at this,
-      assumption,
-      exact nat.dvd_gcd eq₂' eq₅},
-
-    rw nat.dvd_one at eq₆,
-  -- I don't think I want to tell campers to use injections on arithmetic goals
-  -- that feels like too much of an implementation detail of the natural numbers
-    injections,
+    by_contradiction,
+    cases a with q key,
+    have clear_denom := rat.eq_iff_mul_eq_mul.mp key,
+    sorry,
   end
 
+Type classes
+===========================
+Type classes are used to construct complex mathematical structures. 
+Any family of types can be marked as a type class. 
+We can then declare particular elements of a type class to be instances.
+You can think of a type class as "template" for constructing particular instances.
 
+Consider the example of groups.
+A group is defined a type class with the following attributes. 
 
-  -- looks like it is will be a lot of work to move to reals from here, not sure if it is worth the effort
-  -- the above theorem looks good enough to me
+.. code:: 
 
-  -- lemma rat.not_irrational (q : ℚ) : ¬irrational q := λ h, h ⟨q, rfl⟩
-  -- def irrational (x : ℝ) := x ∉ set.range (coe : ℚ → ℝ)
+  structure group : Type u → Type u
+  fields:
+  group.mul : Π {α : Type u} [c : group α], α → α → α
+  group.mul_assoc : ∀ {α : Type u} [c : group α] (a b c_1 : α), a * b * c_1 = a * (b * c_1)
+  group.one : Π {α : Type u} [c : group α], α
+  group.one_mul : ∀ {α : Type u} [c : group α] (a : α), 1 * a = a
+  group.mul_one : ∀ {α : Type u} [c : group α] (a : α), a * 1 = a
+  group.inv : Π {α : Type u} [c : group α], α → α
+  group.mul_left_inv : ∀ {α : Type u} [c : group α] (a : α), a⁻¹ * a = 1
 
-  -- lemma real_rat_irrat (r:real) : (∃ q: ℚ , r = q) ∨ irrational r := 
-  -- begin 
-  -- sorry,
-  -- end 
+If you look at the `source code <https://github.com/leanprover-community/mathlib/blob/e52108d/src/algebra/group/defs.lean>`__ you'll see that the ``class group`` is built gradually by extending multiple classes.
 
-  -- #check real_rat_irrat (real.sqrt 2) 
+.. code:: 
+  
+  class has_one      (α : Type u) := (one : α)
+  -- a group has an identity element 
 
-  -- theorem sqrt2_irrational: (irrational (real.sqrt 2)) := 
-  -- begin 
-  -- sorry,
-  -- end
+  class has_mul      (α : Type u) := (mul : α → α → α)
+  -- a group has multiplication 
+
+  class has_inv      (α : Type u) := (inv : α → α)
+  -- a group has an inverse function
+
+  class semigroup (G : Type u) extends has_mul G :=
+  (mul_assoc : ∀ a b c : G, a * b * c = a * (b * c))
+  -- the multiplication is associative 
+
+  class monoid (M : Type u) extends semigroup M, has_one M :=
+  (one_mul : ∀ a : M, 1 * a = a) (mul_one : ∀ a : M, a * 1 = a)
+  -- multiplication by one is trivial
+
+  class group (α : Type u) extends monoid α, has_inv α :=
+  (mul_left_inv : ∀ a : α, a⁻¹ * a = 1)
+  -- multiplication is associative 
+
+To define an arbitrary group ``G`` we first create it as a type ``G : Type`` and then make it an instance of ``group`` using 
+``[group G]``.
+You can also prove that existing types are instances of ``group`` using the ``instance`` keyword.
+Type classes allow us to prove theorems in vast generalities. 
+For example, any theorem about groups can immediately be applied to integers once we show that integers are an instance of ``group``.
+If you look at `data.int.basic <https://github.com/leanprover-community/mathlib/blob/d1e63f3/src/data/int/basic.lean>`__ 
+you'll see that first fifty lines of code prove that ``ℤ`` is an instance of several type classes.
+
+.. code:: lean 
+
+  import group_theory.order_of_element
+  import tactic
+
+  #print classes
+  #print instances inhabited
+
+  class cyclic_group (G : Type*) extends group G :=
+  (has_generator:  ∃ g : G, ∀ x : G, ∃ n : ℤ, x = g^n)
+
+  /-
+  gpow_add : ∀ {G : Type u_1} (a : G) (m n : ℤ), a ^ (m + n) = a ^ m * a ^ n
+  add_comm : ∀ {G : Type u_1} (a b : G), a + b = b + a
+  -/
+
+  lemma mul_comm_of_cyclic
+    {G : Type*}
+    [hc: cyclic_group G]
+    (g : G) 
+  : ∀ a b : G, a * b = b * a :=
+  begin
+    have has_generator := hc.has_generator,
+    sorry,
+  end

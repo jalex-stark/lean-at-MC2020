@@ -4,6 +4,10 @@
 Logic in Lean - Part 1
 ************************
 
+.. todo:: 
+
+  Proof-read this file, clean the language and fix any typos.
+
 Today's mission, should you choose to accept it, is to understand the philosophy of type theory (in Lean).
 Don't try to memorize anything, that will happen automatically. 
 Instead, try to r̶e̶a̶l̶i̶z̶e̶ ̶t̶h̶a̶t̶ ̶t̶h̶e̶r̶e̶ ̶i̶s̶ ̶n̶o̶ ̶s̶p̶o̶o̶n̶ do as many exercises as you can. 
@@ -12,13 +16,10 @@ And **always save your work**.
 The easiest way to do this is by bookmarking the Lean window in your web browser.
 
 Lean is built on top of a logic system called *type theory*, which is an alternative to *set theory*.
-In type theory, instead of elements we have *terms and* every term has a *type*.
+In type theory, instead of elements we have *terms* and every term has a *type*.
 When translated to math, terms can be either mathematical objects, functions, propositions, or proofs. 
 The notation ``x : X`` stands for "``x`` is a term of type ``X``" or "``x`` is an inhabitant of ``X``".
 For the most part, you can think of a type as a set and terms as elements of the set.
-
-.. the most drastic difference comes from the paradigm of **propositions as types**.
-
 
 Propositions as types
 ======================
@@ -35,7 +36,7 @@ Furthermore, each proposition ``P`` is itself a type and the inhabitants of ``P`
 As such, in type theory "producing a proof of ``P``" is the same as "producing a term of type ``P``"
 and so a proposition ``P`` is ``true`` if there exists a term ``hp`` of type ``P``.
 
-**Notation.** Throughout these notes, we'll let ``P, Q, R, ...`` denote propositions unless otherwise specified.
+**Notation.** Throughout these notes, ``P, Q, R, ...`` will denote propositions.
 
 Implication 
 ------------
@@ -196,7 +197,7 @@ The next two tactics are ``have`` and ``apply``.
 
 Often these two tactics can be used interchangeably. 
 Think of ``have`` as reasoning forward and ``apply`` as reasoning backward.
-When writing a big proof, you often want to use a combination of the two that makes the proof readable.
+When writing a big proof, you often want a healthy combination of the two that makes the proof readable.
 
 .. code:: lean 
   :name: have_apply_examples 
@@ -301,7 +302,7 @@ Can you find which one?
     sorry,
   end
 
-That's because it is not true that ``¬ ¬ P = P`` *by definition*, after all, 
+This is because it is not true that ``¬ ¬ P = P`` *by definition*, after all, 
 ``¬ ¬ P`` is ``(P → false) → false`` which is drastically different from ``P``.
 There is an extra axiom called **the law of excluded middle** which says that 
 either ``P`` is inhabited or ``¬ P`` is inhabited (and there is no *middle* option) 
@@ -432,15 +433,15 @@ are valid manipulations of natural numbers (so you don't accidentally divide by 
 Unfortunately, this also means that the term ``1 : ℕ`` is different from the term ``1 : ℤ``.
 In Lean, if you do ``(1 : ℕ - 2 : ℕ)`` you get ``0 : ℕ`` but if you do ``(1 : ℤ - 2 : ℤ)`` you get ``-1 : ℤ``,
 that's because natural numbers and subtraction are not buddies.
-Similar problems arise with division.
+Another issue is that ``1 : ℕ = 1 : ℤ`` is not a valid statement in type theory.
 This is not the end of the world though. 
-You can *coerce* ``1 : ℕ`` to ``1 : ℤ`` if you want subtraction to work properly, 
+Lean allows you to *coerce* ``1 : ℕ`` to ``1 : ℤ`` if you want subtraction to work properly, 
 or ``1 : ℕ`` to ``1 : ℚ`` if you want division to work properly.
 
 This, and a few other such things, is what drives most mathematicians away from type theory.
 But these things are only difficult when you're first learning them.
 With practice, type theory becomes second nature, the same as set theory.
 
-.. rubric:: 
+.. rubric:: footnotes
 
 .. [#f1] Except under staff supervision.

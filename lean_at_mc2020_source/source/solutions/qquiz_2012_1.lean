@@ -52,7 +52,7 @@ lemma catch_the_frog :
 begin
   use λ n, n * (n - 1),
   intro k, use k + 1,
-  split, { omega },
+  split, { linarith, },
   simp,
 end
 

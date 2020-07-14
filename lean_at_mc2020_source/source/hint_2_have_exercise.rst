@@ -1,4 +1,4 @@
-.. _hint_1_have_exercise:
+.. _hint_2_have_exercise:
 
 Hint 2 for the have exercise
 -----------------------------------

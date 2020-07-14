@@ -4,6 +4,10 @@
 Glossary of tactics 
 *********************
 
+.. todo:: 
+
+  Needs general cleaning.
+
 Implications in Lean 
 ======================
 
@@ -193,3 +197,26 @@ Proving "trivial" statements
   * - ``simp`` 
     - ``simp,`` is a very complex tactic that tries to use theorems from the mathlib library to close the goal. 
       You should only ever use ``simp,`` to *close a goal* because its behavior changes as more theorems get added to the library.
+
+
+Equality 
+===========
+
+.. list-table:: 
+  :widths: 10 90
+  :header-rows: 0
+
+  * - ``rw``
+    - If ``f`` is a term of type ``P = Q`` (or ``P ↔ Q``), then 
+
+        ``rw f,`` searches for ``P`` in the target and replaces it with ``Q``.
+
+        ``rw ←f,`` searches for ``Q`` in the target and replaces it with ``P``.
+      
+      If additionally, ``hr : R`` is a hypothesis, then 
+
+        ``rw f at hr,`` searches for ``P`` in the expression ``R`` and replaces it with ``Q``.
+
+        ``rw ←f at hr,`` searches for ``Q`` in the expression ``R`` and replaces it with ``P``.
+
+      Mathematically, this is saying because ``P = Q``, we can replace ``P`` with ``Q`` (or the other way around).

@@ -43,7 +43,7 @@ begin
     omega,
 end
 
-example 
+-- example 
 
 /-- Every group of order 4 is commutative -/
 lemma mul_comm_of_card_eq_four (G : Type*) [fintype G] [group G] (hG4 : fintype.card G = 4) :
@@ -61,3 +61,7 @@ begin
   have := nat.le_of_lt_succ x_lt,
   interval_cases x, -- why doesn't this work
 end
+
+#check "hello"
+def mc := "hello"
+
