@@ -19,10 +19,11 @@ One can *explain* mathematical proofs to it and it can check their correctness.
 It also simplifies the proof writing process by providing ``goals`` and ``tactics``.
 
 Lean is built on top of a formal system called type theory.
-In type theory, instead of elements we have terms and every term has a type.
-When translated to math, terms can be either mathematical objects, functions, propositions, or proofs.
+In type theory, the basic notions are "terms" and "types" --- compare to "elements" and "sets" in set theory.
+Every term has a type, and types are just a special kind of term.
+Terms can be interpreted as mathematical objects, functions, propositions, or proofs.
 The only two things Lean can do is *create* terms and *check* their types.
-By iterating these two operations one can teach Lean to verify complex mathematical proofs.
+By iterating these two operations, we can teach Lean to verify complex mathematical proofs.
 
 .. code-block:: lean
 
@@ -69,8 +70,9 @@ Every once in a while, you will see a code snippet like this:
 Clicking on the ``try it!`` button in the upper right corner will
 open a copy in a window
 so that you can edit it,
-and Lean provides feedback in the ``Lean Goal`` window.
-There are several exercises in these notes to be done this way.
+and Lean provides feedback in the ``Lean Infoview`` window.
+We use this feature to provide exercises inline in the notes. 
+We recommend attempting each exercise as you go along.
 
 These notes are designed for a 5-day Lean crash course at Mathcamp 2020.
 On Days 1 and 2 you'll learn the basics of type theory and some basic ``tactics`` in Lean. 
@@ -83,7 +85,8 @@ It is recommended that you simultaneously attempt at least one of the following 
 #. Read `Theorem Proving in Lean`_.
 
 The `Natural Number Game`_ is a fun (and highly addictive!) game that proves same basic properties of natural numbers in Lean.
-`Theorem Proving in Lean`_ is a comprehensive online book that covers all the theorem proving aspects of Lean in great detail.
+`Theorem Proving in Lean`_ is a comprehensive online book that aims to cover all the theorem proving aspects of Lean in great detail. 
+It is still under active development as of August 2020.
 
 The Lean community is very welcoming to newcomers, and people are available on the `Lean Zulip chat group`_ round the clock
 to answer questions. 
@@ -93,7 +96,8 @@ You're highly encouraged to join one or both of these channels.
 
 Acknowledgments.
 ===================
-These notes are developed by `Apurva Nakade <https://apurvanakade.github.io>`__ and `Jalex Stark <https://jalexstark.com/>`__ with a lot of help from Mathcamp campers and Mathcamp staff Joanna and Maya (thanks!).
+These notes are developed by `Apurva Nakade <https://apurvanakade.github.io>`__ and `Jalex Stark <https://jalexstark.com/>`__ 
+with a lot of help from Mathcamp campers and Mathcamp staff Joanna and Maya (thanks!).
 Large chunks of these notes are taken from various learning resources available on the `leanprover-community website <https://leanprover-community.github.io/learn.html>`__.
 
 
@@ -106,13 +110,14 @@ Useful Links.
     #. `The Mechanization of Mathematics`_ 
     #. `The Future of Mathematics`_
     #. `Kevin Buzzard's Twitch channel <https://www.twitch.tv/kbuzzard>`__. In particular, checkout `this video <https://www.twitch.tv/videos/665779560>`__ about summer projects.
-    #. `Jalex Stark's Twitch channel <https://www.twitch.tv/jalexstark>`__. In particular, checkout `this video <https://www.twitch.tv/videos/665779560>`__ about summer projects.
+    #. `Jalex Stark's Twitch channel <https://www.twitch.tv/jalexstark>`__. 
 #. `Discord server <https://t.co/DSz6mbw4Oc?amp=1>`__ 
 #. `Lean Zulip chat group`_
 
 
 .. _`The Mechanization of Mathematics`: https://www.ams.org/journals/notices/201806/rnoti-p681.pdf
 .. _`The Future of Mathematics`: https://www.youtube.com/watch?v=Dp-mQ3HxgDE
+.. _`Lecture videos from LFTCM 2020`: https://www.youtube.com/playlist?list=PLlF-CfQhukNlxexiNJErGJd2dte_J1t1N
 .. _Lean: https://leanprover.github.io/people/
 .. _mathlib: https://leanprover-community.github.io/
 .. _`Natural Number Game`: https://wwwf.imperial.ac.uk/~buzzard/xena/natural_number_game/
